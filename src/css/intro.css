@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+.egg-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: transparent;
+  opacity: 1;
+}
+
+.egg-intro.fading {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.egg-shell-top,
+.egg-shell-bottom {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 110%,
+      #fff6e0 0%, #fafaf8 45%, #f5f5f3 100%);
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.egg-shell-top {
+  transform: translateY(4px);
+}
+
+.egg-shell-bottom {
+  background:
+    radial-gradient(ellipse 100% 60% at 50% -10%,
+      #fff6e0 0%, #fafaf8 45%, #f5f5f3 100%);
+  transform: translateY(-4px);
+}
+
+.egg-shell-top::after,
+.egg-shell-bottom::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.egg-shell-top::after {
+  bottom: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(160, 130, 90, 0.12) 0%, transparent 100%);
+}
+
+.egg-shell-bottom::after {
+  top: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(160, 130, 90, 0.12) 0%, transparent 100%);
+}
+
+.egg-intro.peek .egg-shell-top {
+  transform: translateY(-20px);
+}
+
+.egg-intro.peek .egg-shell-bottom {
+  transform: translateY(20px);
+}
+
+.egg-intro.open .egg-shell-top {
+  transform: translateY(-120vh);
+  transition: transform 1.1s cubic-bezier(0.55, 0, 0.45, 1);
+}
+
+.egg-intro.open .egg-shell-bottom {
+  transform: translateY(120vh);
+  transition: transform 1.1s cubic-bezier(0.55, 0, 0.45, 1);
+}
+
+#intro-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(15px, 2.2vw, 28px);
+  color: #3c3830;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+#prompt-text {
+  animation: blink 1.15s step-end infinite;
+  color: #000;
+  text-shadow: 2px 2px 0 #fff;
+  filter: none;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+#intro-text.fade-out,
+#intro-text.hidden {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.intro-controls-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 7.5%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  pointer-events: none;
+  user-select: none;
+  color: #fff;
+  font-family: 'Press Start 2P', monospace;
+  text-align: center;
+  text-shadow: 2px 2px 0 #000;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.intro-controls-hint.visible {
+  opacity: 1;
+}
+
+.intro-controls-hint.fading {
+  opacity: 0;
+}
+
+.intro-controls-hint.hidden {
+  display: none;
+}
+
+.intro-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.intro-controls-label {
+  font-size: clamp(12px, 1.4vw, 22px);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.intro-controls-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.intro-controls-key {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+}
+
+.intro-controls-key-wasd,
+.intro-controls-key-arrow {
+  height: clamp(28px, 4vw, 48px);
+  width: auto;
+}
+
+.intro-controls-key-space {
+  height: clamp(20px, 2.8vw, 34px);
+  width: auto;
+}
+
+@media (max-width: 980px) {
+  .intro-controls-hint {
+    bottom: 6%;
+    gap: 12px;
+  }
+
+  .intro-controls-row {
+    gap: 12px;
+  }
+
+  .intro-controls-label {
+    font-size: 10px;
+  }
+
+  .intro-controls-key-wasd,
+  .intro-controls-key-arrow {
+    height: 30px;
+  }
+
+  .intro-controls-key-space {
+    height: 18px;
+  }
+}

@@ -1,0 +1,391 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+:root {
+  --dialog-text: #ffffff;
+  --dialog-shadow: rgba(0, 0, 0, 0.85);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.dialog-ui {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  display: block;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.dialog-ui.hidden {
+  display: none;
+}
+
+.dialog-shell {
+  position: relative;
+  width: 624px;
+  height: 212px;
+  transform: scale(1.3);
+  transform-origin: center bottom;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  overflow: visible;
+}
+
+.dialog-shell-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  pointer-events: none;
+}
+
+.dialog-npc-name {
+  position: absolute;
+  left: 190px;
+  top: 10px;
+  width: 150px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dialog-text);
+  font-family: "Press Start 2P", monospace;
+  font-size: 12px;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dog-portrait {
+  position: absolute;
+  left: 5px;
+  top: -30px;
+  width: 200px;
+  height: 200px;
+  transform: none;
+  z-index: 3;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  display: block;
+  pointer-events: none;
+}
+
+#dialog-text,
+.dialog-continue,
+.dialog-choice,
+.dialog-name-row {
+  position: relative;
+  z-index: 1;
+}
+
+#dialog-text {
+  position: absolute;
+  left: 175px;
+  top: 55px;
+  right: 55px;
+  margin: 0;
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--dialog-text);
+  text-shadow: 2px 2px 0 #000;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.dialog-continue,
+.dialog-choice,
+.dialog-name-row {
+  position: absolute;
+  right: 14px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--dialog-text);
+  text-shadow: 2px 2px 0 #000;
+}
+
+.dialog-continue,
+.dialog-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  left: 50%;
+  right: auto;
+  width: max-content;
+  transform: translateX(-50%);
+}
+
+.dialog-choice {
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.dialog-continue {
+  justify-content: center;
+}
+
+.dialog-name-row {
+  left: 180px;
+}
+
+.dialog-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dialog-action-button:focus {
+  outline: none;
+}
+
+.dialog-action-button:focus-visible {
+  outline: 2px solid rgba(255, 224, 138, 0.9);
+  outline-offset: 4px;
+}
+
+.dialog-choice-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-option-item {
+  flex: 0 0 auto;
+}
+
+.dialog-hint-label {
+  display: inline-block;
+  line-height: 1.1;
+}
+
+.dialog-keycap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 28px;
+  flex: 0 0 auto;
+  background-image: url("../assets/ui/Button.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  color: #1f1f1f;
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  line-height: 1;
+  text-shadow: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+}
+
+.dialog-keycap-text {
+  display: inline-block;
+  transform: translateY(-2px);
+}
+
+.dialog-action-button:active .dialog-keycap,
+.dialog-action-button.is-pressed .dialog-keycap {
+  background-image: url("../assets/ui/ButtonPressed.png");
+}
+
+.dialog-action-button:active .dialog-keycap-text,
+.dialog-action-button.is-pressed .dialog-keycap-text {
+  transform: translateY(2px);
+}
+
+.dialog-continue {
+  bottom: 4px;
+  opacity: 0;
+  left: 56%;
+  transition: opacity 120ms ease;
+}
+
+.dialog-continue.is-visible {
+  opacity: 1;
+}
+
+.dialog-choice {
+  bottom: 4px;
+  opacity: 0;
+  left: 56%;
+  transition: opacity 120ms ease;
+}
+
+.dialog-choice.is-visible {
+  opacity: 1;
+}
+
+.dialog-choice .dialog-hint-label {
+  font-size: 8px;
+}
+
+.dialog-name-row {
+  top: 80px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dialog-name-row.hidden {
+  display: none !important;
+}
+
+.dialog-name-input {
+  flex: 0 0 auto;
+  width: 192px;
+  height: 34px;
+  min-width: 0;
+  border: 0;
+  background: url("../assets/ui/Text_Box.png") center center / 100% 100% no-repeat;
+  color: #fff;
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  padding: 0 12px 1px;
+  border-radius: 0;
+  outline: none;
+  box-sizing: border-box;
+  image-rendering: pixelated;
+  pointer-events: auto;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.dialog-name-input::placeholder {
+  color: #fff;
+  opacity: 1;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.dialog-name-input:focus {
+  outline: none;
+}
+
+.dialog-prompt {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -110%);
+  z-index: 9998;
+  width: max-content;
+  color: #fff;
+  font-family: "Press Start 2P", monospace;
+  font-size: 18px;
+  line-height: 1.1;
+  text-shadow: 5px 5px 0 #000, 0 0 16px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  will-change: left, top;
+}
+
+.dialog-prompt[hidden] {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .dialog-ui {
+    bottom: 18px;
+  }
+
+  .dialog-shell {
+    width: min(624px, calc(100vw - 16px));
+    height: auto;
+    aspect-ratio: 312 / 106;
+    transform: scale(1);
+  }
+
+  .dialog-npc-name {
+    left: 33%;
+    top: 4%;
+    width: 18%;
+    height: 10%;
+    font-size: 11px;
+  }
+
+  .dog-portrait {
+    left: -4%;
+    top: -11%;
+    width: 40%;
+    height: 90%;
+  }
+
+  #dialog-text {
+    left: 28%;
+    top: 25%;
+    right: 7%;
+    font-size: 10px;
+  }
+
+  .dialog-continue,
+  .dialog-choice,
+  .dialog-name-row {
+    right: 4%;
+    font-size: 10px;
+  }
+
+  .dialog-continue {
+    left: 56%;
+  }
+
+  .dialog-choice {
+    left: 56%;
+  }
+
+  .dialog-name-row {
+    left: 29%;
+  }
+
+  .dialog-keycap {
+    width: 60px;
+    height: 28px;
+    font-size: 8px;
+  }
+
+  .dialog-continue,
+  .dialog-choice {
+    bottom: 3%;
+  }
+
+  .dialog-name-row {
+    top: 40%;
+  }
+
+  .dialog-name-input {
+    width: min(192px, calc(100vw - 210px));
+    height: 34px;
+  }
+
+  .dialog-prompt {
+    font-size: 12px;
+    max-width: calc(100vw - 24px);
+    white-space: normal;
+  }
+}
