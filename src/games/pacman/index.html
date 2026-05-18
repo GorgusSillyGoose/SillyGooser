@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <title>Gulu Goose</title>
+    <link rel="shortcut icon" href="./favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+      }
+
+      body {
+        display: flex;
+      }
+
+      .js-pacman-playground {
+        width: 100%;
+        height: 100%;
+      }
+
+      .js-pacman-playground,
+      .js-pacman-playground * {
+        font-family: "Press Start 2P", monospace !important;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="position: absolute; left: -1000px;">Gulu Goose</h1>
+    <h2 style="position: absolute; left: -1000px;">Play the local Gulu Goose arcade build</h2>
+    <div class="js-pacman-playground with-border"></div>
+    <script type="text/javascript" src="./shim.js"></script>
+    <script type="text/javascript" src="./bundle.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1155 @@
+{
+  "generatedAt": "2026-05-13T19:43:20.5200745Z",
+  "source": "src/assets/Memories",
+  "folderFormat": "DD-MM-YYYY - Memory Title",
+  "imageFormat": "1.png, 1.jpg, 1.jpeg, 1.webp, or 1.Description.png/jpg/jpeg/webp",
+  "count": 24,
+  "memories": [
+    {
+      "id": "2025-12-31-candles-new-year",
+      "folderName": "31-12-2025 - Candles & New year",
+      "title": "Candles & New Year",
+      "date": "2025-12-31",
+      "folderDate": "2026-05-13T14:01:02.5448642Z",
+      "coverImage": "./assets/Memories/.generated/31-12-2025-candles-new-year-01-craft-table-display.jpg",
+      "coverFullImage": "./assets/Memories/31-12-2025%20-%20Candles%20%26%20New%20year/1.craft-table-display.jpeg",
+      "imageCount": 6,
+      "description": "Craft Table Display",
+      "images": [
+        {
+          "index": 1,
+          "description": "Craft Table Display",
+          "fileName": "1.craft-table-display.jpeg",
+          "src": "./assets/Memories/31-12-2025%20-%20Candles%20%26%20New%20year/1.craft-table-display.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/31-12-2025-candles-new-year-01-craft-table-display.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Shopping Bags On Street",
+          "fileName": "2.shopping-bags-on-street.jpeg",
+          "src": "./assets/Memories/31-12-2025%20-%20Candles%20%26%20New%20year/2.shopping-bags-on-street.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/31-12-2025-candles-new-year-02-shopping-bags-on-street.jpg"
+        },
+        {
+          "index": 3,
+          "description": "White Shirt Selfie",
+          "fileName": "3.white-shirt-selfie.jpeg",
+          "src": "./assets/Memories/31-12-2025%20-%20Candles%20%26%20New%20year/3.white-shirt-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/31-12-2025-candles-new-year-03-white-shirt-selfie.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Warm Light Selfie",
+          "fileName": "4.warm-light-selfie.jpeg",
+          "src": "./assets/Memories/31-12-2025%20-%20Candles%20%26%20New%20year/4.warm-light-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/31-12-2025-candles-new-year-04-warm-light-selfie.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Crowded Night Street",
+          "fileName": "5.crowded-night-street.jpeg",
+          "src": "./assets/Memories/31-12-2025%20-%20Candles%20%26%20New%20year/5.crowded-night-street.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/31-12-2025-candles-new-year-05-crowded-night-street.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Bar With Blue Lights",
+          "fileName": "6.bar-with-blue-lights.jpeg",
+          "src": "./assets/Memories/31-12-2025%20-%20Candles%20%26%20New%20year/6.bar-with-blue-lights.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/31-12-2025-candles-new-year-06-bar-with-blue-lights.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-01-stalker-flight-to-china",
+      "folderName": "01-01-2026 - Stalker & Flight to China",
+      "title": "Stalker & Flight To China",
+      "date": "2026-01-01",
+      "folderDate": "2026-05-13T19:30:29.9613124Z",
+      "coverImage": "./assets/Memories/.generated/01-01-2026-stalker-flight-to-china-01-beer-towers.jpg",
+      "coverFullImage": "./assets/Memories/01-01-2026%20-%20Stalker%20%26%20Flight%20to%20China/1.Beer-towers.jpeg",
+      "imageCount": 5,
+      "description": "Beer Towers",
+      "images": [
+        {
+          "index": 1,
+          "description": "Beer Towers",
+          "fileName": "1.Beer-towers.jpeg",
+          "src": "./assets/Memories/01-01-2026%20-%20Stalker%20%26%20Flight%20to%20China/1.Beer-towers.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/01-01-2026-stalker-flight-to-china-01-beer-towers.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Secret Stalker",
+          "fileName": "2.Secret-stalker.jpeg",
+          "src": "./assets/Memories/01-01-2026%20-%20Stalker%20%26%20Flight%20to%20China/2.Secret-stalker.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/01-01-2026-stalker-flight-to-china-02-secret-stalker.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Airport Selfie",
+          "fileName": "3.airport-selfie.jpeg",
+          "src": "./assets/Memories/01-01-2026%20-%20Stalker%20%26%20Flight%20to%20China/3.airport-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/01-01-2026-stalker-flight-to-china-03-airport-selfie.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Gift Box On Plane",
+          "fileName": "4.gift-box-on-plane.jpeg",
+          "src": "./assets/Memories/01-01-2026%20-%20Stalker%20%26%20Flight%20to%20China/4.gift-box-on-plane.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/01-01-2026-stalker-flight-to-china-04-gift-box-on-plane.jpg"
+        },
+        {
+          "index": 5,
+          "description": "There Is A Dazzling Haze",
+          "fileName": "5.there-is-a-dazzling-haze.jpeg",
+          "src": "./assets/Memories/01-01-2026%20-%20Stalker%20%26%20Flight%20to%20China/5.there-is-a-dazzling-haze.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/01-01-2026-stalker-flight-to-china-05-there-is-a-dazzling-haze.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-04-pictures-came-back",
+      "folderName": "04-01-2026 - Pictures came back",
+      "title": "Pictures Came Back",
+      "date": "2026-01-04",
+      "folderDate": "2026-05-13T13:57:52.7418911Z",
+      "coverImage": "./assets/Memories/.generated/04-01-2026-pictures-came-back-01-party-selfie-group.jpg",
+      "coverFullImage": "./assets/Memories/04-01-2026%20-%20Pictures%20came%20back/1.party-selfie-group.jpeg",
+      "imageCount": 4,
+      "description": "Party Selfie Group",
+      "images": [
+        {
+          "index": 1,
+          "description": "Party Selfie Group",
+          "fileName": "1.party-selfie-group.jpeg",
+          "src": "./assets/Memories/04-01-2026%20-%20Pictures%20came%20back/1.party-selfie-group.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-01-2026-pictures-came-back-01-party-selfie-group.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Friends With Beers",
+          "fileName": "2.friends-with-beers.jpeg",
+          "src": "./assets/Memories/04-01-2026%20-%20Pictures%20came%20back/2.friends-with-beers.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-01-2026-pictures-came-back-02-friends-with-beers.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Pair With Beer",
+          "fileName": "3.pair-with-beer.jpeg",
+          "src": "./assets/Memories/04-01-2026%20-%20Pictures%20came%20back/3.pair-with-beer.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-01-2026-pictures-came-back-03-pair-with-beer.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Trio With Beers",
+          "fileName": "4.trio-with-beers.jpeg",
+          "src": "./assets/Memories/04-01-2026%20-%20Pictures%20came%20back/4.trio-with-beers.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-01-2026-pictures-came-back-04-trio-with-beers.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-05-flight-canceled",
+      "folderName": "05-01-2026 -  Flight canceled",
+      "title": "Flight Canceled",
+      "date": "2026-01-05",
+      "folderDate": "2026-05-13T13:57:52.7614212Z",
+      "coverImage": "./assets/Memories/.generated/05-01-2026-flight-canceled-01-luggage-on-floor.jpg",
+      "coverFullImage": "./assets/Memories/05-01-2026%20-%20%20Flight%20canceled/1.luggage-on-floor.jpeg",
+      "imageCount": 7,
+      "description": "Luggage On Floor",
+      "images": [
+        {
+          "index": 1,
+          "description": "Luggage On Floor",
+          "fileName": "1.luggage-on-floor.jpeg",
+          "src": "./assets/Memories/05-01-2026%20-%20%20Flight%20canceled/1.luggage-on-floor.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/05-01-2026-flight-canceled-01-luggage-on-floor.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Snowy Patio",
+          "fileName": "2.snowy-patio.jpeg",
+          "src": "./assets/Memories/05-01-2026%20-%20%20Flight%20canceled/2.snowy-patio.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/05-01-2026-flight-canceled-02-snowy-patio.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Snowy Balcony",
+          "fileName": "3.snowy-balcony.jpeg",
+          "src": "./assets/Memories/05-01-2026%20-%20%20Flight%20canceled/3.snowy-balcony.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/05-01-2026-flight-canceled-03-snowy-balcony.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Snowy Tower Site",
+          "fileName": "4.snowy-tower-site.jpeg",
+          "src": "./assets/Memories/05-01-2026%20-%20%20Flight%20canceled/4.snowy-tower-site.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/05-01-2026-flight-canceled-04-snowy-tower-site.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Hotel Room Two Beds",
+          "fileName": "5.hotel-room-two-beds.jpeg",
+          "src": "./assets/Memories/05-01-2026%20-%20%20Flight%20canceled/5.hotel-room-two-beds.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/05-01-2026-flight-canceled-05-hotel-room-two-beds.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Hotel Room Desk",
+          "fileName": "6.hotel-room-desk.jpeg",
+          "src": "./assets/Memories/05-01-2026%20-%20%20Flight%20canceled/6.hotel-room-desk.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/05-01-2026-flight-canceled-06-hotel-room-desk.jpg"
+        },
+        {
+          "index": 7,
+          "description": "Hotel Bathroom",
+          "fileName": "7.hotel-bathroom.jpeg",
+          "src": "./assets/Memories/05-01-2026%20-%20%20Flight%20canceled/7.hotel-bathroom.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/05-01-2026-flight-canceled-07-hotel-bathroom.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-07-sapa",
+      "folderName": "07-01-2026 - Sapa",
+      "title": "Sapa",
+      "date": "2026-01-07",
+      "folderDate": "2026-05-13T13:57:52.7829829Z",
+      "coverImage": "./assets/Memories/.generated/07-01-2026-sapa-01-rice-terraces.jpg",
+      "coverFullImage": "./assets/Memories/07-01-2026%20-%20Sapa/1.rice-terraces.jpeg",
+      "imageCount": 6,
+      "description": "Rice Terraces",
+      "images": [
+        {
+          "index": 1,
+          "description": "Rice Terraces",
+          "fileName": "1.rice-terraces.jpeg",
+          "src": "./assets/Memories/07-01-2026%20-%20Sapa/1.rice-terraces.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/07-01-2026-sapa-01-rice-terraces.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Mountain Ridge Terraces",
+          "fileName": "2.mountain-ridge-terraces.jpeg",
+          "src": "./assets/Memories/07-01-2026%20-%20Sapa/2.mountain-ridge-terraces.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/07-01-2026-sapa-02-mountain-ridge-terraces.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Cable Car Selfie",
+          "fileName": "3.cable-car-selfie.jpeg",
+          "src": "./assets/Memories/07-01-2026%20-%20Sapa/3.cable-car-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/07-01-2026-sapa-03-cable-car-selfie.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Hand Sculpture Viewpoint",
+          "fileName": "4.hand-sculpture-viewpoint.jpeg",
+          "src": "./assets/Memories/07-01-2026%20-%20Sapa/4.hand-sculpture-viewpoint.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/07-01-2026-sapa-04-hand-sculpture-viewpoint.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Giant Face Statue",
+          "fileName": "5.giant-face-statue.jpeg",
+          "src": "./assets/Memories/07-01-2026%20-%20Sapa/5.giant-face-statue.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/07-01-2026-sapa-05-giant-face-statue.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Sapa Town View",
+          "fileName": "6.sapa-town-view.jpeg",
+          "src": "./assets/Memories/07-01-2026%20-%20Sapa/6.sapa-town-view.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/07-01-2026-sapa-06-sapa-town-view.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-08-lunch-vn",
+      "folderName": "08-01-2026 - Lunch VN",
+      "title": "Lunch Vn",
+      "date": "2026-01-08",
+      "folderDate": "2026-05-13T13:57:52.7864802Z",
+      "coverImage": "./assets/Memories/.generated/08-01-2026-lunch-vn-01-vietnamese-noodle-bowl.jpg",
+      "coverFullImage": "./assets/Memories/08-01-2026%20-%20Lunch%20VN/1.vietnamese-noodle-bowl.jpeg",
+      "imageCount": 2,
+      "description": "Vietnamese Noodle Bowl",
+      "images": [
+        {
+          "index": 1,
+          "description": "Vietnamese Noodle Bowl",
+          "fileName": "1.vietnamese-noodle-bowl.jpeg",
+          "src": "./assets/Memories/08-01-2026%20-%20Lunch%20VN/1.vietnamese-noodle-bowl.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/08-01-2026-lunch-vn-01-vietnamese-noodle-bowl.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Vietnamese Noodle Bowl",
+          "fileName": "2.vietnamese-noodle-bowl.jpeg",
+          "src": "./assets/Memories/08-01-2026%20-%20Lunch%20VN/2.vietnamese-noodle-bowl.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/08-01-2026-lunch-vn-02-vietnamese-noodle-bowl.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-09-last-pho",
+      "folderName": "09-01-2026 - Last pho",
+      "title": "Last Pho",
+      "date": "2026-01-09",
+      "folderDate": "2026-05-13T13:57:52.8010199Z",
+      "coverImage": "./assets/Memories/.generated/09-01-2026-last-pho-01-pho-bowl-with-drink.jpg",
+      "coverFullImage": "./assets/Memories/09-01-2026%20-%20Last%20pho/1.pho-bowl-with-drink.jpeg",
+      "imageCount": 3,
+      "description": "Pho Bowl With Drink",
+      "images": [
+        {
+          "index": 1,
+          "description": "Pho Bowl With Drink",
+          "fileName": "1.pho-bowl-with-drink.jpeg",
+          "src": "./assets/Memories/09-01-2026%20-%20Last%20pho/1.pho-bowl-with-drink.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-last-pho-01-pho-bowl-with-drink.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Airplane Seat Blanket",
+          "fileName": "2.airplane-seat-blanket.jpeg",
+          "src": "./assets/Memories/09-01-2026%20-%20Last%20pho/2.airplane-seat-blanket.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-last-pho-02-airplane-seat-blanket.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Snowy Windmill",
+          "fileName": "3.snowy-windmill.jpeg",
+          "src": "./assets/Memories/09-01-2026%20-%20Last%20pho/3.snowy-windmill.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-last-pho-03-snowy-windmill.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-09-bahnmi-25",
+      "folderName": "09-01-2026 - Bahnmi25",
+      "title": "Bahnmi 25",
+      "date": "2026-01-09",
+      "folderDate": "2026-05-13T13:57:52.7940367Z",
+      "coverImage": "./assets/Memories/.generated/09-01-2026-bahnmi25-01-banhmi-and-bread-table.jpg",
+      "coverFullImage": "./assets/Memories/09-01-2026%20-%20Bahnmi25/1.banhmi-and-bread-table.jpeg",
+      "imageCount": 5,
+      "description": "Banhmi And Bread Table",
+      "images": [
+        {
+          "index": 1,
+          "description": "Banhmi And Bread Table",
+          "fileName": "1.banhmi-and-bread-table.jpeg",
+          "src": "./assets/Memories/09-01-2026%20-%20Bahnmi25/1.banhmi-and-bread-table.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-bahnmi25-01-banhmi-and-bread-table.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Banhmi Tray Overhead",
+          "fileName": "2.banhmi-tray-overhead.jpg",
+          "src": "./assets/Memories/09-01-2026%20-%20Bahnmi25/2.banhmi-tray-overhead.jpg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-bahnmi25-02-banhmi-tray-overhead.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Banhmi Tray Table",
+          "fileName": "3.banhmi-tray-table.jpg",
+          "src": "./assets/Memories/09-01-2026%20-%20Bahnmi25/3.banhmi-tray-table.jpg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-bahnmi25-03-banhmi-tray-table.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Banhmi 25 Logo Block",
+          "fileName": "4.banhmi25-logo-block.jpg",
+          "src": "./assets/Memories/09-01-2026%20-%20Bahnmi25/4.banhmi25-logo-block.jpg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-bahnmi25-04-banhmi-25-logo-block.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Banhmi 25 Shopfront",
+          "fileName": "5.banhmi25-shopfront.jpg",
+          "src": "./assets/Memories/09-01-2026%20-%20Bahnmi25/5.banhmi25-shopfront.jpg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-bahnmi25-05-banhmi-25-shopfront.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-09-just-us",
+      "folderName": "09-01-2026 - Just us",
+      "title": "Just Us",
+      "date": "2026-01-09",
+      "folderDate": "2026-05-13T13:57:52.7960458Z",
+      "coverImage": "./assets/Memories/.generated/09-01-2026-just-us-01-p.jpg",
+      "coverFullImage": "./assets/Memories/09-01-2026%20-%20Just%20us/1.p.jpg",
+      "imageCount": 1,
+      "description": "P",
+      "images": [
+        {
+          "index": 1,
+          "description": "P",
+          "fileName": "1.p.jpg",
+          "src": "./assets/Memories/09-01-2026%20-%20Just%20us/1.p.jpg",
+          "thumbnailSrc": "./assets/Memories/.generated/09-01-2026-just-us-01-p.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-16-spotify",
+      "folderName": "16-01-2026 - Spotify",
+      "title": "Spotify",
+      "date": "2026-01-16",
+      "folderDate": "2026-05-13T13:57:52.8532260Z",
+      "coverImage": "./assets/Memories/.generated/16-01-2026-spotify-01-duo-playlist-screen.jpg",
+      "coverFullImage": "./assets/Memories/16-01-2026%20-%20Spotify/1.duo-playlist-screen.jpeg",
+      "imageCount": 6,
+      "description": "Duo Playlist Screen",
+      "images": [
+        {
+          "index": 1,
+          "description": "Duo Playlist Screen",
+          "fileName": "1.duo-playlist-screen.jpeg",
+          "src": "./assets/Memories/16-01-2026%20-%20Spotify/1.duo-playlist-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/16-01-2026-spotify-01-duo-playlist-screen.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Spotify Library Screen",
+          "fileName": "2.spotify-library-screen.jpeg",
+          "src": "./assets/Memories/16-01-2026%20-%20Spotify/2.spotify-library-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/16-01-2026-spotify-02-spotify-library-screen.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Spotify Track Art",
+          "fileName": "3.spotify-track-art.jpeg",
+          "src": "./assets/Memories/16-01-2026%20-%20Spotify/3.spotify-track-art.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/16-01-2026-spotify-03-spotify-track-art.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Spotify Profile Screen",
+          "fileName": "4.spotify-profile-screen.jpeg",
+          "src": "./assets/Memories/16-01-2026%20-%20Spotify/4.spotify-profile-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/16-01-2026-spotify-04-spotify-profile-screen.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Spotify Lyrics Screen",
+          "fileName": "5.spotify-lyrics-screen.jpeg",
+          "src": "./assets/Memories/16-01-2026%20-%20Spotify/5.spotify-lyrics-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/16-01-2026-spotify-05-spotify-lyrics-screen.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Spotify Lyrics Screen",
+          "fileName": "6.spotify-lyrics-screen.jpeg",
+          "src": "./assets/Memories/16-01-2026%20-%20Spotify/6.spotify-lyrics-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/16-01-2026-spotify-06-spotify-lyrics-screen.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-19-red",
+      "folderName": "19-01-2026 - Red",
+      "title": "Red",
+      "date": "2026-01-19",
+      "folderDate": "2026-05-13T13:57:52.8567481Z",
+      "coverImage": "./assets/Memories/.generated/19-01-2026-red-01-red-album-cover.jpg",
+      "coverFullImage": "./assets/Memories/19-01-2026%20-%20Red/1.red-album-cover.jpeg",
+      "imageCount": 2,
+      "description": "Red Album Cover",
+      "images": [
+        {
+          "index": 1,
+          "description": "Red Album Cover",
+          "fileName": "1.red-album-cover.jpeg",
+          "src": "./assets/Memories/19-01-2026%20-%20Red/1.red-album-cover.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/19-01-2026-red-01-red-album-cover.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Hat Mirror Selfie",
+          "fileName": "2.hat-mirror-selfie.jpeg",
+          "src": "./assets/Memories/19-01-2026%20-%20Red/2.hat-mirror-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/19-01-2026-red-02-hat-mirror-selfie.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-24-snap-games",
+      "folderName": "24-01-2026 - Snap games",
+      "title": "Snap Games",
+      "date": "2026-01-24",
+      "folderDate": "2026-05-13T13:57:52.8593103Z",
+      "coverImage": "./assets/Memories/.generated/24-01-2026-snap-games-01-snap-game-level-74.jpg",
+      "coverFullImage": "./assets/Memories/24-01-2026%20-%20Snap%20games/1.snap-game-level-74.jpeg",
+      "imageCount": 2,
+      "description": "Snap Game Level 74",
+      "images": [
+        {
+          "index": 1,
+          "description": "Snap Game Level 74",
+          "fileName": "1.snap-game-level-74.jpeg",
+          "src": "./assets/Memories/24-01-2026%20-%20Snap%20games/1.snap-game-level-74.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/24-01-2026-snap-games-01-snap-game-level-74.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Snap Game Level 85",
+          "fileName": "2.snap-game-level-85.jpeg",
+          "src": "./assets/Memories/24-01-2026%20-%20Snap%20games/2.snap-game-level-85.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/24-01-2026-snap-games-02-snap-game-level-85.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-01-29-draw-each-other",
+      "folderName": "29-01-2026 - Draw each other",
+      "title": "Draw Each Other",
+      "date": "2026-01-29",
+      "folderDate": "2026-05-13T13:57:52.8801282Z",
+      "coverImage": "./assets/Memories/.generated/29-01-2026-draw-each-other-01-girl-and-drawing.jpg",
+      "coverFullImage": "./assets/Memories/29-01-2026%20-%20Draw%20each%20other/1.girl-and-drawing.jpeg",
+      "imageCount": 4,
+      "description": "Girl And Drawing",
+      "images": [
+        {
+          "index": 1,
+          "description": "Girl And Drawing",
+          "fileName": "1.girl-and-drawing.jpeg",
+          "src": "./assets/Memories/29-01-2026%20-%20Draw%20each%20other/1.girl-and-drawing.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/29-01-2026-draw-each-other-01-girl-and-drawing.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Beach Girl Drawing",
+          "fileName": "2.beach-girl-drawing.jpeg",
+          "src": "./assets/Memories/29-01-2026%20-%20Draw%20each%20other/2.beach-girl-drawing.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/29-01-2026-draw-each-other-02-beach-girl-drawing.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Drawing Screenshot",
+          "fileName": "3.drawing-screenshot.jpeg",
+          "src": "./assets/Memories/29-01-2026%20-%20Draw%20each%20other/3.drawing-screenshot.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/29-01-2026-draw-each-other-03-drawing-screenshot.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Stick Figure Drawing",
+          "fileName": "4.stick-figure-drawing.jpeg",
+          "src": "./assets/Memories/29-01-2026%20-%20Draw%20each%20other/4.stick-figure-drawing.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/29-01-2026-draw-each-other-04-stick-figure-drawing.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-02-02-lego-game",
+      "folderName": "02-02-2026 - Lego game",
+      "title": "Lego Game",
+      "date": "2026-02-02",
+      "folderDate": "2026-05-13T19:30:59.4219945Z",
+      "coverImage": "./assets/Memories/.generated/02-02-2026-lego-game-01-lego-voyagers.jpg",
+      "coverFullImage": "./assets/Memories/02-02-2026%20-%20Lego%20game/1.lego-voyagers.jpeg",
+      "imageCount": 5,
+      "description": "Lego Voyagers",
+      "images": [
+        {
+          "index": 1,
+          "description": "Lego Voyagers",
+          "fileName": "1.lego-voyagers.jpeg",
+          "src": "./assets/Memories/02-02-2026%20-%20Lego%20game/1.lego-voyagers.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/02-02-2026-lego-game-01-lego-voyagers.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Lego Voyagers Pause Menu",
+          "fileName": "2.lego-voyagers-pause-menu.jpeg",
+          "src": "./assets/Memories/02-02-2026%20-%20Lego%20game/2.lego-voyagers-pause-menu.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/02-02-2026-lego-game-02-lego-voyagers-pause-menu.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Lego Voyagers With Cat",
+          "fileName": "3.lego-voyagers-with-cat.jpeg",
+          "src": "./assets/Memories/02-02-2026%20-%20Lego%20game/3.lego-voyagers-with-cat.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/02-02-2026-lego-game-03-lego-voyagers-with-cat.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Lego Voyagers Game Scene",
+          "fileName": "4.lego-voyagers-game-scene.jpeg",
+          "src": "./assets/Memories/02-02-2026%20-%20Lego%20game/4.lego-voyagers-game-scene.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/02-02-2026-lego-game-04-lego-voyagers-game-scene.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Lego Voyagers Local Coop",
+          "fileName": "5.lego-voyagers-local-coop.jpeg",
+          "src": "./assets/Memories/02-02-2026%20-%20Lego%20game/5.lego-voyagers-local-coop.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/02-02-2026-lego-game-05-lego-voyagers-local-coop.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-02-03-gooser-and-my-bestie",
+      "folderName": "03-02-2026 - Gooser and my bestie",
+      "title": "Gooser And My Bestie",
+      "date": "2026-02-03",
+      "folderDate": "2026-05-13T19:32:57.5977211Z",
+      "coverImage": "./assets/Memories/.generated/03-02-2026-gooser-and-my-bestie-01-audrey-drawn.jpg",
+      "coverFullImage": "./assets/Memories/03-02-2026%20-%20Gooser%20and%20my%20bestie/1.Audrey-drawn.jpeg",
+      "imageCount": 7,
+      "description": "Audrey Drawn",
+      "images": [
+        {
+          "index": 1,
+          "description": "Audrey Drawn",
+          "fileName": "1.Audrey-drawn.jpeg",
+          "src": "./assets/Memories/03-02-2026%20-%20Gooser%20and%20my%20bestie/1.Audrey-drawn.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-02-2026-gooser-and-my-bestie-01-audrey-drawn.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Grey With Beer",
+          "fileName": "2.Grey-with-beer.jpeg",
+          "src": "./assets/Memories/03-02-2026%20-%20Gooser%20and%20my%20bestie/2.Grey-with-beer.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-02-2026-gooser-and-my-bestie-02-grey-with-beer.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Chat Screenshot Grey",
+          "fileName": "3.chat-screenshot-grey.jpeg",
+          "src": "./assets/Memories/03-02-2026%20-%20Gooser%20and%20my%20bestie/3.chat-screenshot-grey.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-02-2026-gooser-and-my-bestie-03-chat-screenshot-grey.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Hairstyle Grey",
+          "fileName": "4.Hairstyle-Grey.jpeg",
+          "src": "./assets/Memories/03-02-2026%20-%20Gooser%20and%20my%20bestie/4.Hairstyle-Grey.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-02-2026-gooser-and-my-bestie-04-hairstyle-grey.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Grey Improved",
+          "fileName": "5.Grey-Improved.jpeg",
+          "src": "./assets/Memories/03-02-2026%20-%20Gooser%20and%20my%20bestie/5.Grey-Improved.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-02-2026-gooser-and-my-bestie-05-grey-improved.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Fan Chat Screenshot",
+          "fileName": "6.fan-chat-screenshot.jpeg",
+          "src": "./assets/Memories/03-02-2026%20-%20Gooser%20and%20my%20bestie/6.fan-chat-screenshot.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-02-2026-gooser-and-my-bestie-06-fan-chat-screenshot.jpg"
+        },
+        {
+          "index": 7,
+          "description": "Beach Grey",
+          "fileName": "7.beach-Grey.jpeg",
+          "src": "./assets/Memories/03-02-2026%20-%20Gooser%20and%20my%20bestie/7.beach-Grey.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-02-2026-gooser-and-my-bestie-07-beach-grey.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-03-04-always-with-you",
+      "folderName": "04-03-2026 - Always with you",
+      "title": "Always With You",
+      "date": "2026-03-04",
+      "folderDate": "2026-05-13T13:57:52.7499297Z",
+      "coverImage": "./assets/Memories/.generated/04-03-2026-always-with-you-01-avatar-duo-selfie.jpg",
+      "coverFullImage": "./assets/Memories/04-03-2026%20-%20Always%20with%20you/1.avatar-duo-selfie.jpeg",
+      "imageCount": 5,
+      "description": "Avatar Duo Selfie",
+      "images": [
+        {
+          "index": 1,
+          "description": "Avatar Duo Selfie",
+          "fileName": "1.avatar-duo-selfie.jpeg",
+          "src": "./assets/Memories/04-03-2026%20-%20Always%20with%20you/1.avatar-duo-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-03-2026-always-with-you-01-avatar-duo-selfie.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Keychain In Hand",
+          "fileName": "2.keychain-in-hand.jpeg",
+          "src": "./assets/Memories/04-03-2026%20-%20Always%20with%20you/2.keychain-in-hand.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-03-2026-always-with-you-02-keychain-in-hand.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Keychain In Car",
+          "fileName": "3.keychain-in-car.jpeg",
+          "src": "./assets/Memories/04-03-2026%20-%20Always%20with%20you/3.keychain-in-car.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-03-2026-always-with-you-03-keychain-in-car.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Keychain On Table",
+          "fileName": "4.keychain-on-table.jpeg",
+          "src": "./assets/Memories/04-03-2026%20-%20Always%20with%20you/4.keychain-on-table.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-03-2026-always-with-you-04-keychain-on-table.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Avatar Couple Selfie",
+          "fileName": "5.avatar-couple-selfie.jpeg",
+          "src": "./assets/Memories/04-03-2026%20-%20Always%20with%20you/5.avatar-couple-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/04-03-2026-always-with-you-05-avatar-couple-selfie.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-03-15-painting-of-us",
+      "folderName": "15-03-2026 - Painting of us",
+      "title": "Painting Of Us",
+      "date": "2026-03-15",
+      "folderDate": "2026-05-13T13:57:52.8441937Z",
+      "coverImage": "./assets/Memories/.generated/15-03-2026-painting-of-us-01-painted-couple-portrait.jpg",
+      "coverFullImage": "./assets/Memories/15-03-2026%20-%20Painting%20of%20us/1.painted-couple-portrait.jpeg",
+      "imageCount": 6,
+      "description": "Painted Couple Portrait",
+      "images": [
+        {
+          "index": 1,
+          "description": "Painted Couple Portrait",
+          "fileName": "1.painted-couple-portrait.jpeg",
+          "src": "./assets/Memories/15-03-2026%20-%20Painting%20of%20us/1.painted-couple-portrait.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/15-03-2026-painting-of-us-01-painted-couple-portrait.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Fluffy Cat On Table",
+          "fileName": "2.fluffy-cat-on-table.jpeg",
+          "src": "./assets/Memories/15-03-2026%20-%20Painting%20of%20us/2.fluffy-cat-on-table.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/15-03-2026-painting-of-us-02-fluffy-cat-on-table.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Cat Over Portrait Painting",
+          "fileName": "3.cat-over-portrait-painting.jpeg",
+          "src": "./assets/Memories/15-03-2026%20-%20Painting%20of%20us/3.cat-over-portrait-painting.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/15-03-2026-painting-of-us-03-cat-over-portrait-painting.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Paint Stained Hand",
+          "fileName": "4.paint-stained-hand.jpeg",
+          "src": "./assets/Memories/15-03-2026%20-%20Painting%20of%20us/4.paint-stained-hand.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/15-03-2026-painting-of-us-04-paint-stained-hand.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Cat Over Painting",
+          "fileName": "5.cat-over-painting.jpeg",
+          "src": "./assets/Memories/15-03-2026%20-%20Painting%20of%20us/5.cat-over-painting.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/15-03-2026-painting-of-us-05-cat-over-painting.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Painting On Easel",
+          "fileName": "6.painting-on-easel.jpeg",
+          "src": "./assets/Memories/15-03-2026%20-%20Painting%20of%20us/6.painting-on-easel.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/15-03-2026-painting-of-us-06-painting-on-easel.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-03-28-gooser",
+      "folderName": "28-03-2026 - Gooser",
+      "title": "Gooser",
+      "date": "2026-03-28",
+      "folderDate": "2026-05-13T13:57:52.8733736Z",
+      "coverImage": "./assets/Memories/.generated/28-03-2026-gooser-01-game-result-screen.jpg",
+      "coverFullImage": "./assets/Memories/28-03-2026%20-%20Gooser/1.game-result-screen.jpeg",
+      "imageCount": 7,
+      "description": "Game Result Screen",
+      "images": [
+        {
+          "index": 1,
+          "description": "Game Result Screen",
+          "fileName": "1.game-result-screen.jpeg",
+          "src": "./assets/Memories/28-03-2026%20-%20Gooser/1.game-result-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/28-03-2026-gooser-01-game-result-screen.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Waiting For Opponent",
+          "fileName": "2.waiting-for-opponent.jpeg",
+          "src": "./assets/Memories/28-03-2026%20-%20Gooser/2.waiting-for-opponent.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/28-03-2026-gooser-02-waiting-for-opponent.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Game Result Screen",
+          "fileName": "3.game-result-screen.jpeg",
+          "src": "./assets/Memories/28-03-2026%20-%20Gooser/3.game-result-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/28-03-2026-gooser-03-game-result-screen.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Game Result Screen",
+          "fileName": "4.game-result-screen.jpeg",
+          "src": "./assets/Memories/28-03-2026%20-%20Gooser/4.game-result-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/28-03-2026-gooser-04-game-result-screen.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Game Result Screen",
+          "fileName": "5.game-result-screen.jpeg",
+          "src": "./assets/Memories/28-03-2026%20-%20Gooser/5.game-result-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/28-03-2026-gooser-05-game-result-screen.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Goose Award Screen",
+          "fileName": "6.goose-award-screen.jpeg",
+          "src": "./assets/Memories/28-03-2026%20-%20Gooser/6.goose-award-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/28-03-2026-gooser-06-goose-award-screen.jpg"
+        },
+        {
+          "index": 7,
+          "description": "Goose Victory Screen",
+          "fileName": "7.goose-victory-screen.jpeg",
+          "src": "./assets/Memories/28-03-2026%20-%20Gooser/7.goose-victory-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/28-03-2026-gooser-07-goose-victory-screen.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-03-30-how-i-see-you",
+      "folderName": "30-03-2026 - How I see you",
+      "title": "How I See You",
+      "date": "2026-03-30",
+      "folderDate": "2026-05-13T13:57:52.8853534Z",
+      "coverImage": "./assets/Memories/.generated/30-03-2026-how-i-see-you-01-photo-collage-categories.jpg",
+      "coverFullImage": "./assets/Memories/30-03-2026%20-%20How%20I%20see%20you/1.photo-collage-categories.jpeg",
+      "imageCount": 4,
+      "description": "Photo Collage Categories",
+      "images": [
+        {
+          "index": 1,
+          "description": "Photo Collage Categories",
+          "fileName": "1.photo-collage-categories.jpeg",
+          "src": "./assets/Memories/30-03-2026%20-%20How%20I%20see%20you/1.photo-collage-categories.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/30-03-2026-how-i-see-you-01-photo-collage-categories.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Dog Sunset Sunflower Collage",
+          "fileName": "2.dog-sunset-sunflower-collage.jpeg",
+          "src": "./assets/Memories/30-03-2026%20-%20How%20I%20see%20you/2.dog-sunset-sunflower-collage.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/30-03-2026-how-i-see-you-02-dog-sunset-sunflower-collage.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Cartoon Food Travel Collage",
+          "fileName": "3.cartoon-food-travel-collage.jpeg",
+          "src": "./assets/Memories/30-03-2026%20-%20How%20I%20see%20you/3.cartoon-food-travel-collage.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/30-03-2026-how-i-see-you-03-cartoon-food-travel-collage.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Sapa Worth Visiting Collage",
+          "fileName": "4.sapa-worth-visiting-collage.jpeg",
+          "src": "./assets/Memories/30-03-2026%20-%20How%20I%20see%20you/4.sapa-worth-visiting-collage.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/30-03-2026-how-i-see-you-04-sapa-worth-visiting-collage.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-04-11-voov-fun",
+      "folderName": "11-04-2026 - Voov Fun",
+      "title": "Voov Fun",
+      "date": "2026-04-11",
+      "folderDate": "2026-05-13T13:57:52.8142198Z",
+      "coverImage": "./assets/Memories/.generated/11-04-2026-voov-fun-01-voice-call-screen.jpg",
+      "coverFullImage": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/1.voice-call-screen.jpeg",
+      "imageCount": 8,
+      "description": "Voice Call Screen",
+      "images": [
+        {
+          "index": 1,
+          "description": "Voice Call Screen",
+          "fileName": "1.voice-call-screen.jpeg",
+          "src": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/1.voice-call-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/11-04-2026-voov-fun-01-voice-call-screen.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Dinner Table Screen",
+          "fileName": "2.dinner-table-screen.jpeg",
+          "src": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/2.dinner-table-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/11-04-2026-voov-fun-02-dinner-table-screen.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Love Photo Collage",
+          "fileName": "3.love-photo-collage.jpeg",
+          "src": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/3.love-photo-collage.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/11-04-2026-voov-fun-03-love-photo-collage.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Distorted Face Selfie",
+          "fileName": "4.distorted-face-selfie.jpeg",
+          "src": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/4.distorted-face-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/11-04-2026-voov-fun-04-distorted-face-selfie.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Video Call Selfie",
+          "fileName": "5.video-call-selfie.jpeg",
+          "src": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/5.video-call-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/11-04-2026-voov-fun-05-video-call-selfie.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Participant List Screen",
+          "fileName": "6.participant-list-screen.jpeg",
+          "src": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/6.participant-list-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/11-04-2026-voov-fun-06-participant-list-screen.jpg"
+        },
+        {
+          "index": 7,
+          "description": "Video Call Window",
+          "fileName": "7.video-call-window.jpeg",
+          "src": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/7.video-call-window.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/11-04-2026-voov-fun-07-video-call-window.jpg"
+        },
+        {
+          "index": 8,
+          "description": "Sleeping With Plush",
+          "fileName": "8.sleeping-with-plush.jpeg",
+          "src": "./assets/Memories/11-04-2026%20-%20Voov%20Fun/8.sleeping-with-plush.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/11-04-2026-voov-fun-08-sleeping-with-plush.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-04-14-me-in-the-eyes-of-my-friends",
+      "folderName": "14-04-2026 - Me in the eyes of my friends",
+      "title": "Me In The Eyes Of My Friends",
+      "date": "2026-04-14",
+      "folderDate": "2026-05-13T13:57:52.8335882Z",
+      "coverImage": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-01-blank-figure-drawing.jpg",
+      "coverFullImage": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/1.blank-figure-drawing.jpeg",
+      "imageCount": 10,
+      "description": "Blank Figure Drawing",
+      "images": [
+        {
+          "index": 1,
+          "description": "Blank Figure Drawing",
+          "fileName": "1.blank-figure-drawing.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/1.blank-figure-drawing.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-01-blank-figure-drawing.jpg"
+        },
+        {
+          "index": 10,
+          "description": "Drawing On Laptop",
+          "fileName": "10.drawing-on-laptop.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/10.drawing-on-laptop.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-10-drawing-on-laptop.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Girl And Cat Illustration",
+          "fileName": "2.girl-and-cat-illustration.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/2.girl-and-cat-illustration.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-02-girl-and-cat-illustration.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Colorful Text Drawing",
+          "fileName": "3.colorful-text-drawing.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/3.colorful-text-drawing.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-03-colorful-text-drawing.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Text Covered Figure",
+          "fileName": "4.text-covered-figure.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/4.text-covered-figure.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-04-text-covered-figure.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Selfie Over Drawing",
+          "fileName": "5.selfie-over-drawing.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/5.selfie-over-drawing.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-05-selfie-over-drawing.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Labeled Drawing Collage",
+          "fileName": "6.labeled-drawing-collage.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/6.labeled-drawing-collage.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-06-labeled-drawing-collage.jpg"
+        },
+        {
+          "index": 7,
+          "description": "Simple Face Drawing",
+          "fileName": "7.simple-face-drawing.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/7.simple-face-drawing.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-07-simple-face-drawing.jpg"
+        },
+        {
+          "index": 8,
+          "description": "Girl Holding Cat",
+          "fileName": "8.girl-holding-cat.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/8.girl-holding-cat.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-08-girl-holding-cat.jpg"
+        },
+        {
+          "index": 9,
+          "description": "Drawing On Monitor",
+          "fileName": "9.drawing-on-monitor.jpeg",
+          "src": "./assets/Memories/14-04-2026%20-%20Me%20in%20the%20eyes%20of%20my%20friends/9.drawing-on-monitor.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/14-04-2026-me-in-the-eyes-of-my-friends-09-drawing-on-monitor.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-04-24-leg-day",
+      "folderName": "24-04-2026 - Leg day",
+      "title": "Leg Day",
+      "date": "2026-04-24",
+      "folderDate": "2026-05-13T13:57:52.8628313Z",
+      "coverImage": "./assets/Memories/.generated/24-04-2026-leg-day-01-mirror-gym-selfie.jpg",
+      "coverFullImage": "./assets/Memories/24-04-2026%20-%20Leg%20day/1.mirror-gym-selfie.jpeg",
+      "imageCount": 2,
+      "description": "Mirror Gym Selfie",
+      "images": [
+        {
+          "index": 1,
+          "description": "Mirror Gym Selfie",
+          "fileName": "1.mirror-gym-selfie.jpeg",
+          "src": "./assets/Memories/24-04-2026%20-%20Leg%20day/1.mirror-gym-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/24-04-2026-leg-day-01-mirror-gym-selfie.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Gym Selfie With Glasses",
+          "fileName": "2.gym-selfie-with-glasses.jpeg",
+          "src": "./assets/Memories/24-04-2026%20-%20Leg%20day/2.gym-selfie-with-glasses.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/24-04-2026-leg-day-02-gym-selfie-with-glasses.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-05-03-popmix",
+      "folderName": "03-05-2026 - PopMix",
+      "title": "Popmix",
+      "date": "2026-05-03",
+      "folderDate": "2026-05-13T19:38:08.1055056Z",
+      "coverImage": "./assets/Memories/.generated/03-05-2026-popmix-01-group-carry-pose.jpg",
+      "coverFullImage": "./assets/Memories/03-05-2026%20-%20PopMix/1.group-carry-pose.jpeg",
+      "imageCount": 7,
+      "description": "Group Carry Pose",
+      "images": [
+        {
+          "index": 1,
+          "description": "Group Carry Pose",
+          "fileName": "1.group-carry-pose.jpeg",
+          "src": "./assets/Memories/03-05-2026%20-%20PopMix/1.group-carry-pose.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-05-2026-popmix-01-group-carry-pose.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Confetti Dance Party",
+          "fileName": "2.confetti-dance-party.jpeg",
+          "src": "./assets/Memories/03-05-2026%20-%20PopMix/2.confetti-dance-party.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-05-2026-popmix-02-confetti-dance-party.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Laughing Selfie Trio",
+          "fileName": "3.laughing-selfie-trio.jpeg",
+          "src": "./assets/Memories/03-05-2026%20-%20PopMix/3.laughing-selfie-trio.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-05-2026-popmix-03-laughing-selfie-trio.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Sleepy Video Call Selfie",
+          "fileName": "4.sleepy-video-call-selfie.jpeg",
+          "src": "./assets/Memories/03-05-2026%20-%20PopMix/4.sleepy-video-call-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-05-2026-popmix-04-sleepy-video-call-selfie.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Plane Video Call Selfie",
+          "fileName": "5.plane-video-call-selfie.jpeg",
+          "src": "./assets/Memories/03-05-2026%20-%20PopMix/5.plane-video-call-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-05-2026-popmix-05-plane-video-call-selfie.jpg"
+        },
+        {
+          "index": 6,
+          "description": "Laughing Video Call Selfie",
+          "fileName": "6.laughing-video-call-selfie.jpeg",
+          "src": "./assets/Memories/03-05-2026%20-%20PopMix/6.laughing-video-call-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-05-2026-popmix-06-laughing-video-call-selfie.jpg"
+        },
+        {
+          "index": 7,
+          "description": "Kiss Video Call Selfie",
+          "fileName": "7.kiss-video-call-selfie.jpeg",
+          "src": "./assets/Memories/03-05-2026%20-%20PopMix/7.kiss-video-call-selfie.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/03-05-2026-popmix-07-kiss-video-call-selfie.jpg"
+        }
+      ]
+    },
+    {
+      "id": "2026-05-06-i-love-you-moooooore",
+      "folderName": "06-05-2026 - i love you moooooore",
+      "title": "I Love You Moooooore",
+      "date": "2026-05-06",
+      "folderDate": "2026-05-13T13:57:52.7732573Z",
+      "coverImage": "./assets/Memories/.generated/06-05-2026-i-love-you-moooooore-01-confetti-game-screen.jpg",
+      "coverFullImage": "./assets/Memories/06-05-2026%20-%20i%20love%20you%20moooooore/1.confetti-game-screen.jpeg",
+      "imageCount": 5,
+      "description": "Confetti Game Screen",
+      "images": [
+        {
+          "index": 1,
+          "description": "Confetti Game Screen",
+          "fileName": "1.confetti-game-screen.jpeg",
+          "src": "./assets/Memories/06-05-2026%20-%20i%20love%20you%20moooooore/1.confetti-game-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/06-05-2026-i-love-you-moooooore-01-confetti-game-screen.jpg"
+        },
+        {
+          "index": 2,
+          "description": "Confetti Game Screen",
+          "fileName": "2.confetti-game-screen.jpeg",
+          "src": "./assets/Memories/06-05-2026%20-%20i%20love%20you%20moooooore/2.confetti-game-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/06-05-2026-i-love-you-moooooore-02-confetti-game-screen.jpg"
+        },
+        {
+          "index": 3,
+          "description": "Confetti Game Screen",
+          "fileName": "3.confetti-game-screen.jpeg",
+          "src": "./assets/Memories/06-05-2026%20-%20i%20love%20you%20moooooore/3.confetti-game-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/06-05-2026-i-love-you-moooooore-03-confetti-game-screen.jpg"
+        },
+        {
+          "index": 4,
+          "description": "Confetti Game Screen",
+          "fileName": "4.confetti-game-screen.jpeg",
+          "src": "./assets/Memories/06-05-2026%20-%20i%20love%20you%20moooooore/4.confetti-game-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/06-05-2026-i-love-you-moooooore-04-confetti-game-screen.jpg"
+        },
+        {
+          "index": 5,
+          "description": "Cow Character Screen",
+          "fileName": "5.cow-character-screen.jpeg",
+          "src": "./assets/Memories/06-05-2026%20-%20i%20love%20you%20moooooore/5.cow-character-screen.jpeg",
+          "thumbnailSrc": "./assets/Memories/.generated/06-05-2026-i-love-you-moooooore-05-cow-character-screen.jpg"
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}

@@ -2,10 +2,11 @@ import * as THREE from "three";
 
 const DEFAULT_TALK_DISTANCE = 1.9;
 const DEFAULT_DIALOG_TEXT = "Wil je op de bank zitten?";
-const DEFAULT_GIF_SRC = "../assets/ui/Dog_talk_102x102.gif";
-const FALLBACK_GIF_SRC = "../assets/ui/Dog_talk_102x102.gif";
+const DEFAULT_GIF_SRC = new URL("../assets/ui/Dog_talk_102x102.gif", import.meta.url).href;
+const FALLBACK_GIF_SRC = DEFAULT_GIF_SRC;
 const TYPE_SPEED_DEFAULT = 35;
 const TYPEWRITER_NEWLINE_PAUSE = 660;
+const DEBUG_SKIP_NAME = "Gooser";
 
 let sharedDialogState = null;
 
@@ -78,6 +79,26 @@ function ensureDialogElements() {
     nameRowEl: uiEl.querySelector("#dialog-name-row"),
     nameInputEl: uiEl.querySelector("#dialog-name-input"),
   };
+}
+
+function clearDebugSkipTimer(dialogState) {
+  if (dialogState?.debugSkipTimer) {
+    window.clearTimeout(dialogState.debugSkipTimer);
+    dialogState.debugSkipTimer = 0;
+  }
+}
+
+function queueDebugAdvance(dialogState) {
+  if (!dialogState?.debugSkipDialog || !dialogState.isOpen || dialogState.scriptFinished) {
+    return;
+  }
+
+  clearDebugSkipTimer(dialogState);
+  dialogState.debugSkipTimer = window.setTimeout(() => {
+    dialogState.debugSkipTimer = 0;
+    if (!dialogState.isOpen || dialogState.scriptFinished) return;
+    advance(dialogState);
+  }, 0);
 }
 
 function resolveObject3D(ref) {
@@ -395,6 +416,19 @@ function renderStep(dialogState) {
   }
 
   if (step.type === "name") {
+    if (dialogState.debugSkipDialog) {
+      dialogState.awaitingName = false;
+      setNameInputVisible(dialogState, false);
+      updateContinueHint(dialogState, false);
+      updateChoiceHint(dialogState, false);
+      clearChoiceButtonPressed(dialogState);
+      if (textEl) textEl.textContent = "";
+      dialogState.playerName = dialogState.debugPlayerName || DEBUG_SKIP_NAME;
+      dialogState.activeStepIndex += 1;
+      renderStep(dialogState);
+      return;
+    }
+
     dialogState.awaitingName = true;
     setNameInputVisible(dialogState, true);
     updateContinueHint(dialogState, false);
@@ -419,6 +453,18 @@ function renderStep(dialogState) {
 
   const rawText = step.text || "";
   const text = rawText.replace(/\{playerName\}/g, dialogState.playerName || "Gooser");
+
+  if (dialogState.debugSkipDialog) {
+    if (step.type === "choice") {
+      if (textEl) textEl.textContent = "";
+      updateChoiceHint(dialogState, true);
+      return;
+    }
+
+    if (textEl) textEl.textContent = "";
+    queueDebugAdvance(dialogState);
+    return;
+  }
 
   if (step.type === "line") {
     playSentenceSound(dialogState);
@@ -465,6 +511,7 @@ function applyBranch(dialogState, branch) {
   dialogState.activeStepIndex = 0;
   dialogState.scriptFinished = false;
   dialogState.awaitingName = false;
+  clearDebugSkipTimer(dialogState);
   renderStep(dialogState);
 }
 
@@ -504,6 +551,13 @@ function advance(dialogState) {
   }
 
   if (dialogState.awaitingName) {
+    if (dialogState.debugSkipDialog) {
+      dialogState.playerName = dialogState.debugPlayerName || DEBUG_SKIP_NAME;
+      dialogState.activeStepIndex += 1;
+      renderStep(dialogState);
+      return true;
+    }
+
     const typedName = (dialogState.elements.nameInputEl?.value || "").trim();
     if (!typedName) return true;
 
@@ -569,6 +623,8 @@ export function openDogDialog(text, options = {}) {
   const state = options.state || sharedDialogState;
   if (!state) return false;
 
+  clearDebugSkipTimer(state);
+
   const { uiEl, portraitEl, textEl, continueEl, choiceEl, nameplateEl, nameInputEl } = state.elements;
   state.activeScript = Array.isArray(text) ? text.map(normalizeStep) : [normalizeStep(text || DEFAULT_DIALOG_TEXT)];
   state.activeStepIndex = 0;
@@ -621,6 +677,7 @@ export function closeDogDialog(state = sharedDialogState) {
   state.playerName = "";
   state.activeNpcName = "";
   clearChoiceButtonPressed(state);
+  clearDebugSkipTimer(state);
 
   if (state.cancelTyping) {
     state.cancelTyping();
@@ -674,6 +731,9 @@ export function createDialogSystem(options = {}) {
     sentenceAudioEl: null,
     routes: options.dialogRoutes || {},
     postCloseAction: null,
+    debugSkipDialog: Boolean(options.debugSkipDialog),
+    debugPlayerName: options.debugPlayerName || DEBUG_SKIP_NAME,
+    debugSkipTimer: 0,
   };
 
   sharedDialogState = dialogState;
@@ -722,6 +782,7 @@ export function createDialogSystem(options = {}) {
       dialogScript: npcConfig.dialogScript || null,
       dialogRoutes: npcConfig.dialogRoutes || null,
       sentenceSoundSrc: npcConfig.sentenceSoundSrc || null,
+      onInteract: npcConfig.onInteract || null,
     };
 
     dialogState.npcEntries.push(entry);
@@ -819,6 +880,12 @@ export function createDialogSystem(options = {}) {
       if (dialogState.currentPromptNpc) {
         event.preventDefault();
         const npc = dialogState.currentPromptNpc;
+        if (typeof npc.onInteract === "function") {
+          const handled = npc.onInteract(dialogState, npc);
+          if (handled !== false) {
+            return true;
+          }
+        }
         const rawScript = typeof npc.dialogScript === "function"
           ? npc.dialogScript(dialogState)
           : npc.dialogScript;

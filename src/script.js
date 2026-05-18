@@ -2,6 +2,8 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createDialogSystem } from "./js/dialog.js";
+import { createArcadeMenu } from "./js/arcadeMenu.js";
+import { createMemoryBook } from "./js/memoryBook.js";
 import { finishIntro, initEggIntro, handleIntroEnter, initIntroCamera, handleIntroControlInput, showIntroControlHints } from "./js/intro.js";
 
 const leavesVS = /*glsl*/`
@@ -87,7 +89,7 @@ const raycaster = new THREE.Raycaster();
 const dlight01 = new THREE.DirectionalLight(0xcccccc, 1.8);
 const tree = {group: new THREE.Group()};
 const bench = {group: new THREE.Group(), ready: false};
-const DEBUG_SKIP_DIALOG = false;
+const DEBUG_SKIP_DIALOG = true;
 const DEBUG_SHOW_CAMERA = false;
 const GOOSE_START_TURN_OFFSET = -12 * Math.PI / 180;
 const GOOSE_HEIGHT_OFFSET = -0.14;
@@ -151,6 +153,30 @@ const clock = new THREE.Clock();
 const dialogSystem = createDialogSystem({
   talkDistance: TALK_DISTANCE,
   camera,
+  debugSkipDialog: DEBUG_SKIP_DIALOG,
+});
+let memoryBook = createMemoryBook();
+const arcadeMenu = createArcadeMenu({
+  onOpen: () => {
+    arcadeControlsWasEnabled = controls.enabled;
+    controls.enabled = false;
+    if (goose.group) {
+      goose.group.userData.arcadeMenuOpen = true;
+      controls.target.copy(goose.group.position);
+    }
+    document.body.classList.add("arcade-menu-open");
+  },
+  onClose: () => {
+    if (goose.group) {
+      goose.group.userData.arcadeMenuOpen = false;
+      controls.target.copy(goose.group.position);
+    }
+    document.body.classList.remove("arcade-menu-open");
+    controls.enabled = arcadeControlsWasEnabled;
+    if (goose.actions.idle) {
+      switchGooseAction("idle");
+    }
+  },
 });
 const tmpVector = new THREE.Vector3();
 const tmpVector2 = new THREE.Vector3();
@@ -169,9 +195,448 @@ const keys = {
   arrowright: false,
 };
 let cameraDebugEl = null;
+let arcadeControlsWasEnabled = true;
+const RENDER_PIXEL_RATIO = 1;
+const textureLoader = new THREE.TextureLoader();
+const PROJECTED_SHADOW_COLOR = 0x080516;
+const PROJECTED_SHADOW_GROUND_Y = -0.033;
+const PROJECTED_SHADOW_LIGHT = new THREE.Vector3(3, 6, -3);
+const GROUND_GRASS_RADIUS = 5.45;
+const GROUND_GRASS_MIN_RADIUS = 0.9;
+const GRASS_SPRITE_ASSETS = [
+  "Grass_Sprite_1.png",
+  "Grass_Sprite_2.png",
+  "Grass_Sprite_3.png",
+  "Grass_Sprite_4.png",
+  "Grass_Sprite_5.png",
+  "Grass_Sprite_6.png",
+  "Grass_Sprite_7.png",
+  "Grass_Sprite_8.png",
+  "Grass_Sprite_9.png",
+  "Grass_Sprite_10.png",
+];
+const SCENE_TUNING = {
+  bushes: {
+    center: new THREE.Vector3(0, 0, 0),
+    fadeStart: 0.18,
+    fadeEnd: 0.68,
+    layers: [
+      {
+        name: "back",
+        radius: 6,
+        count: 17,
+        scale: 1.86,
+        y: 0.34,
+        opacity: 0.37,
+        angleOffset: 0.05,
+        assets: ["bg_bush_back_01.png", "bg_bush_back_02.png", "bg_bush_back_03.png"],
+      },
+      {
+        name: "mid",
+        radius: 5.8,
+        count: 15,
+        scale: 1.54,
+        y: 0.26,
+        opacity: 0.52,
+        angleOffset: 0.21,
+        assets: ["bg_bush_mid_01.png", "bg_bush_mid_02.png", "bg_bush_mid_03.png"],
+      },
+      {
+        name: "front",
+        radius: 5.6,
+        count: 14,
+        scale: 1.18,
+        y: 0.13,
+        opacity: 0.6,
+        angleOffset: -0.14,
+        assets: ["bg_bush_front_01.png", "bg_bush_front_02.png", "bg_bush_front_03.png"],
+      },
+    ],
+  },
+};
+const tmpBushViewDirection = new THREE.Vector3();
+const tmpProjectedShadowWorld = new THREE.Vector3();
+const tmpProjectedShadowCenter = new THREE.Vector3();
+const tmpProjectedShadowPerp = new THREE.Vector3();
+const tmpProjectedShadowVertex = new THREE.Vector3();
+let bushRing = null;
+let groundGrassLayer = new THREE.Group();
+const groundShadowLayer = new THREE.Group();
+const projectedModelShadows = [];
+
+function createProjectedShadowMaterial(opacity) {
+  return new THREE.MeshBasicMaterial({
+    color: PROJECTED_SHADOW_COLOR,
+    transparent: true,
+    opacity,
+    depthWrite: false,
+    depthTest: true,
+    side: THREE.DoubleSide,
+    toneMapped: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2,
+  });
+}
+
+function collectShadowMeshes(sourceObject, sourceMeshes) {
+  if (sourceMeshes?.length) {
+    return sourceMeshes.filter((child) => child?.isMesh && child.geometry?.attributes?.position);
+  }
+
+  const meshes = [];
+  sourceObject.traverse((child) => {
+    if (child.isMesh && child.geometry?.attributes?.position) {
+      meshes.push(child);
+    }
+  });
+  return meshes;
+}
+
+function createProjectedShadowGeometry(sourceMesh) {
+  const sourcePosition = sourceMesh.geometry.attributes.position;
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(sourcePosition.count * 3), 3));
+
+  if (sourceMesh.geometry.index) {
+    geometry.setIndex(sourceMesh.geometry.index.clone());
+  }
+
+  return geometry;
+}
+
+function projectShadowGeometry(entry, shadowPart, expand = 1) {
+  const { sourceMesh, sourcePosition, geometry } = shadowPart;
+  const targetPosition = geometry.attributes.position;
+  const {
+    flatness,
+    scaleX,
+    groundY,
+  } = entry;
+  const shadowY = groundY + entry.yBias;
+  let centerX = 0;
+  let centerZ = 0;
+  const count = sourcePosition.count;
+
+  sourceMesh.updateMatrixWorld(true);
+
+  for (let i = 0; i < count; i++) {
+    tmpProjectedShadowVertex.fromBufferAttribute(sourcePosition, i).applyMatrix4(sourceMesh.matrixWorld);
+    const flattenedY = shadowY + (tmpProjectedShadowVertex.y - shadowY) * (1 - flatness);
+    const denom = flattenedY - PROJECTED_SHADOW_LIGHT.y;
+    const t = Math.abs(denom) < 0.0001 ? 0 : (shadowY - PROJECTED_SHADOW_LIGHT.y) / denom;
+    const x = PROJECTED_SHADOW_LIGHT.x + (tmpProjectedShadowVertex.x - PROJECTED_SHADOW_LIGHT.x) * t;
+    const z = PROJECTED_SHADOW_LIGHT.z + (tmpProjectedShadowVertex.z - PROJECTED_SHADOW_LIGHT.z) * t;
+
+    targetPosition.setXYZ(i, x, shadowY, z);
+    centerX += x;
+    centerZ += z;
+  }
+
+  centerX /= count || 1;
+  centerZ /= count || 1;
+
+  if (scaleX !== 1 || expand !== 1) {
+    const direction = entry.castDirection;
+    tmpProjectedShadowPerp.set(-direction.z, 0, direction.x);
+    for (let i = 0; i < count; i++) {
+      const x = targetPosition.getX(i);
+      const z = targetPosition.getZ(i);
+      const dx = x - centerX;
+      const dz = z - centerZ;
+      const along = dx * direction.x + dz * direction.z;
+      const across = dx * tmpProjectedShadowPerp.x + dz * tmpProjectedShadowPerp.z;
+      const widenedAcross = across * scaleX * expand;
+      const stretchedAlong = along * expand;
+
+      targetPosition.setXYZ(
+        i,
+        centerX + direction.x * stretchedAlong + tmpProjectedShadowPerp.x * widenedAcross,
+        shadowY,
+        centerZ + direction.z * stretchedAlong + tmpProjectedShadowPerp.z * widenedAcross
+      );
+    }
+  }
+
+  targetPosition.needsUpdate = true;
+  geometry.computeBoundingSphere();
+}
+
+function updateProjectedModelShadow(entry) {
+  if (!entry?.sourceObject) return;
+
+  entry.sourceObject.updateMatrixWorld(true);
+  entry.sourceObject.getWorldPosition(tmpProjectedShadowWorld);
+  tmpProjectedShadowCenter.copy(tmpProjectedShadowWorld).sub(PROJECTED_SHADOW_LIGHT);
+  tmpProjectedShadowCenter.y = 0;
+  if (tmpProjectedShadowCenter.lengthSq() < 0.0001) {
+    tmpProjectedShadowCenter.set(1, 0, 0);
+  }
+  tmpProjectedShadowCenter.normalize();
+  entry.castDirection.copy(tmpProjectedShadowCenter);
+
+  for (const shadowPart of entry.parts) {
+    projectShadowGeometry(entry, shadowPart, 1);
+    if (shadowPart.featherGeometry) {
+      projectShadowGeometry(
+        entry,
+        {
+          ...shadowPart,
+          geometry: shadowPart.featherGeometry,
+        },
+        1 + entry.blur * 0.018
+      );
+    }
+  }
+}
+
+function setProjectedModelShadowOpacity(shadowGroup, opacity) {
+  const entry = shadowGroup?.userData?.projectedModelShadow;
+  if (!entry) return;
+
+  entry.material.opacity = opacity;
+  entry.featherMaterial.opacity = opacity * 0.28;
+}
+
+function createProjectedModelShadow({
+  sourceObject,
+  sourceMeshes = null,
+  opacity = 0.35,
+  blur = 3,
+  flatness = 0.28,
+  length = 0.58,
+  scaleX = 1,
+  rotation = 0,
+  skew = -8,
+  yBias = 0,
+  groundY = PROJECTED_SHADOW_GROUND_Y,
+  renderOrder = -2,
+  dynamic = false,
+} = {}) {
+  const meshes = collectShadowMeshes(sourceObject, sourceMeshes);
+  if (!sourceObject || !meshes.length) return null;
+
+  const group = new THREE.Group();
+  const material = createProjectedShadowMaterial(opacity);
+  const featherMaterial = createProjectedShadowMaterial(opacity * 0.28);
+  const entry = {
+    sourceObject,
+    group,
+    parts: [],
+    opacity,
+    blur,
+    flatness,
+    length,
+    scaleX,
+    rotation: rotation * Math.PI / 180,
+    skew: skew * Math.PI / 180,
+    yBias,
+    groundY,
+    dynamic,
+    material,
+    featherMaterial,
+    castDirection: new THREE.Vector3(1, 0, 0),
+  };
+
+  for (const sourceMesh of meshes) {
+    const geometry = createProjectedShadowGeometry(sourceMesh);
+    const shadowMesh = new THREE.Mesh(geometry, material);
+    shadowMesh.renderOrder = renderOrder;
+    shadowMesh.frustumCulled = false;
+    group.add(shadowMesh);
+
+    const part = {
+      sourceMesh,
+      sourcePosition: sourceMesh.geometry.attributes.position,
+      geometry,
+    };
+
+    if (blur > 0) {
+      const featherGeometry = createProjectedShadowGeometry(sourceMesh);
+      const featherMesh = new THREE.Mesh(featherGeometry, featherMaterial);
+      featherMesh.renderOrder = renderOrder - 1;
+      featherMesh.frustumCulled = false;
+      group.add(featherMesh);
+      part.featherGeometry = featherGeometry;
+    }
+
+    entry.parts.push(part);
+  }
+
+  group.userData.projectedModelShadow = entry;
+  groundShadowLayer.add(group);
+  updateProjectedModelShadow(entry);
+
+  if (dynamic) {
+    projectedModelShadows.push(entry);
+  }
+
+  return group;
+}
+
+function createSeededRandom(seed) {
+  let t = seed >>> 0;
+  return function seededRandom() {
+    t += 0x6D2B79F5;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function createGrassSprite(texture, {
+  x = 0,
+  y = -0.065,
+  z = 0,
+  scale = 0.6,
+  opacity = 1,
+  renderOrder = -9,
+} = {}) {
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    opacity,
+    depthWrite: false,
+    depthTest: true,
+    toneMapped: false,
+    alphaTest: 0.02,
+  });
+
+  const sprite = new THREE.Sprite(material);
+  sprite.center.set(0.5, 0);
+  sprite.position.set(x, y, z);
+  sprite.renderOrder = renderOrder;
+  sprite.frustumCulled = false;
+  sprite.scale.set(scale, scale, 1);
+  material.map.needsUpdate = true;
+  material.needsUpdate = true;
+  return sprite;
+}
+
+function createGroundGrassLayer() {
+  const group = new THREE.Group();
+  const rng = createSeededRandom(1919);
+  const basePath = "./assets/textures/Grass_sprites/";
+
+  GRASS_SPRITE_ASSETS.forEach((asset, index) => {
+    const angle = rng() * Math.PI * 2;
+    const radius = GROUND_GRASS_MIN_RADIUS + Math.sqrt(rng()) * (GROUND_GRASS_RADIUS - GROUND_GRASS_MIN_RADIUS);
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    const scale = 0.70 + rng() * 0.24;
+    const opacity = 0.86 + rng() * 0.12;
+    let sprite = null;
+    const texture = textureLoader.load(`${basePath}${asset}`, () => {
+      const image = texture.image;
+      if (!sprite || !image?.width || !image?.height) return;
+      const aspect = image.width / image.height;
+      sprite.scale.set(scale * Math.max(0.55, Math.min(1.1, aspect)), scale, 1);
+    });
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.NearestFilter;
+    texture.magFilter = THREE.NearestFilter;
+    texture.generateMipmaps = false;
+    texture.anisotropy = 1;
+    texture.needsUpdate = true;
+    sprite = createGrassSprite(texture, {
+      x,
+      z,
+      scale,
+      opacity,
+      renderOrder: -9 - (index % 2),
+    });
+
+    group.add(sprite);
+  });
+
+  group.position.y = 0;
+  return group;
+}
 
 function formatVector(vector) {
   return `${vector.x.toFixed(2)}, ${vector.y.toFixed(2)}, ${vector.z.toFixed(2)}`;
+}
+
+function smoothstep(edge0, edge1, value) {
+  const x = THREE.MathUtils.clamp((value - edge0) / (edge1 - edge0), 0, 1);
+  return x * x * (3 - 2 * x);
+}
+
+function createBushRing() {
+  const group = new THREE.Group();
+  const sprites = [];
+  const basePath = "./assets/textures/Bush_Sprites/"; 
+
+  SCENE_TUNING.bushes.layers.forEach((layer, layerIndex) => {
+    for (let i = 0; i < layer.count; i++) {
+      const asset = layer.assets[i % layer.assets.length];
+      const texture = textureLoader.load(`${basePath}${asset}`);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.minFilter = THREE.NearestFilter;
+      texture.magFilter = THREE.NearestFilter;
+      texture.generateMipmaps = false;
+      texture.anisotropy = 1;
+
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        depthTest: true,
+        side: THREE.DoubleSide,
+        fog: false,
+        toneMapped: false,
+      });
+
+      const angle = layer.angleOffset + (i / layer.count) * Math.PI * 2;
+      const radiusJitter = 1 + (((i * 37 + layerIndex * 13) % 17) - 8) * 0.004;
+      const radial = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle)).normalize();
+      const sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
+
+      sprite.position
+        .copy(SCENE_TUNING.bushes.center)
+        .addScaledVector(radial, layer.radius * radiusJitter);
+
+      sprite.position.y = layer.y + ((i % 3) - 1) * 0.025;
+
+      const scaleJitter = 0.9 + ((i * 19 + layerIndex * 7) % 9) * 0.025;
+      sprite.scale.set(layer.scale * scaleJitter, layer.scale * 0.7 * scaleJitter, 1);
+      sprite.lookAt(SCENE_TUNING.bushes.center.x, sprite.position.y, SCENE_TUNING.bushes.center.z);
+      sprite.renderOrder = -7 - layerIndex;
+
+      sprite.userData.bush = {
+        radial,
+        baseOpacity: layer.opacity,
+        layerIndex,
+      };
+
+      group.add(sprite);
+      sprites.push(sprite);
+    }
+  });
+
+  group.userData.sprites = sprites;
+  return group;
+}
+
+function updateBushVisibility(delta = 0.016) {
+  if (!bushRing?.userData?.sprites) return;
+
+  tmpBushViewDirection.copy(SCENE_TUNING.bushes.center).sub(camera.position);
+  tmpBushViewDirection.y = 0;
+  if (tmpBushViewDirection.lengthSq() < 0.0001) return;
+  tmpBushViewDirection.normalize();
+
+  for (const sprite of bushRing.userData.sprites) {
+    const dot = sprite.userData.bush.radial.dot(tmpBushViewDirection);
+    const fade = smoothstep(SCENE_TUNING.bushes.fadeStart, SCENE_TUNING.bushes.fadeEnd, dot);
+    const layerDepth = sprite.userData.bush.layerIndex === 0 ? 0.58 : sprite.userData.bush.layerIndex === 1 ? 0.78 : 1.0;
+    const opacity = sprite.userData.bush.baseOpacity * fade * layerDepth;
+
+    sprite.material.opacity = THREE.MathUtils.damp(sprite.material.opacity, opacity, 8, Math.min(delta, 0.033));
+    sprite.visible = sprite.material.opacity > 0.006;
+  }
 }
 
 function playGooseJumpSound() {
@@ -419,6 +884,7 @@ const dogRevisitDialogScript = [
 ];
 
 dogDialogRoutes.gramophoneMusic.postClose = () => startGooseWalkToObject(gramophone.group);
+dogDialogRoutes.couchMemories.postClose = () => memoryBook?.open();
 dogDialogRoutes.arcadeGame.postClose = () => startGooseWalkToObject(arcade.group);
 
 // GLTF LOADING 
@@ -426,6 +892,27 @@ const noiseMap = new THREE.TextureLoader().load('./assets/textures/noise.png');
 const poleTexture = new THREE.TextureLoader().load('./assets/textures/texture.jpg');
 poleTexture.rotation = 100 * 0.01745329252; // WTF???
 const rayPlane = new THREE.Mesh(new THREE.PlaneGeometry(100,100,1,1), undefined);
+const groundTexture = new THREE.TextureLoader().load("./assets/textures/GroundTexture.png");
+groundTexture.colorSpace = THREE.SRGBColorSpace;
+groundTexture.minFilter = THREE.NearestFilter;
+groundTexture.magFilter = THREE.NearestFilter;
+groundTexture.generateMipmaps = false;
+groundTexture.anisotropy = 1;
+groundTexture.center.set(0.5, 0.5);
+groundTexture.rotation = -135* Math.PI / 180;
+groundTexture.wrapS = THREE.ClampToEdgeWrapping;
+groundTexture.wrapT = THREE.ClampToEdgeWrapping;
+const groundMaterial = new THREE.MeshBasicMaterial({
+  map: groundTexture,
+  transparent: true,
+  depthWrite: false,
+  side: THREE.DoubleSide,
+});
+const ground = new THREE.Mesh(new THREE.CircleGeometry(5.8, 96), groundMaterial);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.07;
+ground.renderOrder = -10;
+ground.frustumCulled = false;
 // MATERIALS
 const leavesMat = new THREE.ShaderMaterial({
   lights: true,
@@ -450,7 +937,7 @@ loader.loadAsync("./assets/models/tree.glb")
 	document.getElementById("previewHack").style.display = "none";
   tree.pole = obj.scene.getObjectByName("Pole");
   tree.pole.material = new THREE.MeshToonMaterial({map: tree.pole.material.map});
-  tree.pole.position.y -= 0.05;
+  tree.pole.position.y -= 0.1;
   // Each vertex of crown mesh will be a leaf
   // Crown mesh won't be visible in scene
   tree.crown = obj.scene.getObjectByName("Leaves");
@@ -481,6 +968,27 @@ loader.loadAsync("./assets/models/tree.glb")
   }
   tree.group.add(tree.pole, tree.leaves);
   tree.collider = createXZCollider(tree.pole, 0.65, 0.45);
+  createProjectedModelShadow({
+    sourceObject: tree.pole,
+    opacity: 0.34,
+    blur: 4.2,
+    flatness: 0.34,
+    length: 0.62,
+    scaleX: 1.08,
+    rotation: 0,
+    skew: -10,
+  });
+  createProjectedModelShadow({
+    sourceObject: tree.crown,
+    opacity: 0.16,
+    blur: 5.6,
+    flatness: 0.2,
+    length: 0.48,
+    scaleX: 1.05,
+    rotation: 0,
+    skew: -6,
+    renderOrder: -3,
+  });
   for (let i = 0; i < 24; i++)
     queueDeadLeaf(Math.floor(Math.random() * tree.leavesCount)); 
 })
@@ -537,6 +1045,17 @@ loader.loadAsync("./assets/models/Goose.glb")
       gooseSize.z
     ) * 0.28 * gooseScale;
     scene.add(goose.group);
+    goose.groundShadow = createProjectedModelShadow({
+      sourceObject: goose.group,
+      opacity: 0.42,
+      blur: 3.2,
+      flatness: 0.3,
+      length: 0.56,
+      scaleX: 1.08,
+      rotation: 0,
+      skew: -6,
+      dynamic: true,
+    });
     dialogSystem.setPlayer(goose.group);
 
     goose.mixer = new THREE.AnimationMixer(goose.group);
@@ -607,6 +1126,16 @@ loader.loadAsync("./assets/models/bench.glb")
     benchTalkAnchor.position.set(0, 0.18, -0.95);
     bench.group.add(benchTalkAnchor);
     scene.add(bench.group);
+    createProjectedModelShadow({
+      sourceObject: bench.group,
+      opacity: 0.38,
+      blur: 4.8,
+      flatness: 0.3,
+      length: 0.58,
+      scaleX: 1.18,
+      rotation: 0,
+      skew: -12,
+    });
     bench.ready = true;
     attachDogToBench();
   })
@@ -633,12 +1162,22 @@ loader.loadAsync("./assets/models/nest.glb")
 
     nest.group.scale.setScalar(nestScale);
     nest.group.position.set(
-      -5.15 - (nestCenter.x * nestScale),
+      -2.55 - (nestCenter.x * nestScale),
       -0.05 - (nestBox.min.y * nestScale),
-      0.85 - (nestCenter.z * nestScale)
+      -2.55 - (nestCenter.z * nestScale)
     );
     nest.group.rotation.y = 35 * Math.PI / 180;
     scene.add(nest.group);
+    createProjectedModelShadow({
+      sourceObject: nest.group,
+      opacity: 0.32,
+      blur: 3.4,
+      flatness: 0.34,
+      length: 0.5,
+      scaleX: 1.08,
+      rotation: 0,
+      skew: -8,
+    });
     nest.ready = true;
     placeGooseAtNestStart();
   })
@@ -661,17 +1200,27 @@ loader.loadAsync("./assets/models/Gramophone.glb")
     const gramophoneBox = new THREE.Box3().setFromObject(gramophone.group);
     const gramophoneSize = gramophoneBox.getSize(new THREE.Vector3());
     const gramophoneCenter = gramophoneBox.getCenter(new THREE.Vector3());
-    const gramophoneScale = 1.1 / Math.max(gramophoneSize.x, gramophoneSize.y, gramophoneSize.z);
+    const gramophoneScale = 1.3 / Math.max(gramophoneSize.x, gramophoneSize.y, gramophoneSize.z);
 
     gramophone.group.scale.setScalar(gramophoneScale);
     gramophone.group.position.set(
       2.55 - (gramophoneCenter.x * gramophoneScale),
       -0.05 - (gramophoneBox.min.y * gramophoneScale),
-      0.35 - (gramophoneCenter.z * gramophoneScale)
+      -1.05 - (gramophoneCenter.z * gramophoneScale)
     );
-    gramophone.group.rotation.y = 58 * Math.PI / 180;
+    gramophone.group.rotation.y = 78 * Math.PI / 180;
     gramophone.collider = createXZCollider(gramophone.group, 0.75, 0.4);
     scene.add(gramophone.group);
+    createProjectedModelShadow({
+      sourceObject: gramophone.group,
+      opacity: 0.4,
+      blur: 4.2,
+      flatness: 0.26,
+      length: 0.66,
+      scaleX: 1.08,
+      rotation: 0,
+      skew: -11,
+    });
     gramophone.ready = true;
     dialogSystem.registerNpc({
       id: "gramophone",
@@ -718,13 +1267,23 @@ loader.loadAsync("./assets/models/Arcade.glb")
 
     arcade.group.scale.setScalar(arcadeScale);
     arcade.group.position.set(
-      -1.15 - (arcadeCenter.x * arcadeScale),
+      -1.8 - (arcadeCenter.x * arcadeScale),
       -0.05 - (arcadeBox.min.y * arcadeScale),
-      1.7 - (arcadeCenter.z * arcadeScale)
+      0.8 - (arcadeCenter.z * arcadeScale)
     );
     arcade.group.rotation.y = 110 * Math.PI / 180;
     arcade.collider = createXZCollider(arcade.group, 0.85, 0.55);
     scene.add(arcade.group);
+    createProjectedModelShadow({
+      sourceObject: arcade.group,
+      opacity: 0.42,
+      blur: 5,
+      flatness: 0.24,
+      length: 0.7,
+      scaleX: 1.12,
+      rotation: 0,
+      skew: -9,
+    });
     arcade.ready = true;
     dialogSystem.registerNpc({
       id: "arcade",
@@ -740,6 +1299,7 @@ loader.loadAsync("./assets/models/Arcade.glb")
         "It flickers to life.",
       ],
       gifSrc: "./assets/ui/Dog_talk_102x102.gif",
+      onInteract: () => openArcadeMenu(),
     });
   })
 loader.loadAsync("./assets/models/dog.glb")
@@ -778,6 +1338,17 @@ loader.loadAsync("./assets/models/dog.glb")
       -1.4 - (dogCenter.z * dogScale)
     );
     dog.group.rotation.y = 220 * Math.PI / 180;
+    dog.groundShadow = createProjectedModelShadow({
+      sourceObject: dog.group,
+      opacity: 0.3,
+      blur: 3.2,
+      flatness: 0.33,
+      length: 0.48,
+      scaleX: 1.05,
+      rotation: 0,
+      skew: -7,
+      dynamic: true,
+    });
     dog.mixer = new THREE.AnimationMixer(dog.group);
     if (obj.animations && obj.animations.length) {
       const clip = obj.animations[0];
@@ -805,11 +1376,16 @@ loader.loadAsync("./assets/models/dog.glb")
   })
 // INIT
 document.body.appendChild(renderer.domElement); 
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.domElement.style.imageRendering = "pixelated";
+renderer.domElement.style.imageRendering = "crisp-edges";
+renderer.setPixelRatio(RENDER_PIXEL_RATIO);
 renderer.setSize(window.innerWidth, window.innerHeight);
 dlight01.position.set(3,6,-3);
 dlight01.lookAt(0,2.4,0);
+PROJECTED_SHADOW_LIGHT.copy(dlight01.position);
 rayPlane.visible = false;
+bushRing = createBushRing();
+groundGrassLayer = createGroundGrassLayer();
 camera.position.set(-7,1,-12);
 controls.target = new THREE.Vector3(0,2.4,0);
 controls.minPolarAngle = 0.65;
@@ -821,14 +1397,15 @@ controls.maxDistance = 24;
 controls.autoRotate = false;
 controls.enablePan = false;
 controls.touches = {TWO: THREE.TOUCH.ROTATE,};
-scene.add(dlight01, tree.group, rayPlane);
+scene.add(dlight01, bushRing, tree.group, rayPlane);
+scene.add(ground, groundGrassLayer, groundShadowLayer);
 noiseMap.wrapS = THREE.RepeatWrapping;
 noiseMap.wrapT = THREE.RepeatWrapping;
 
 initEggIntro({
   camera,
   controls,
-  goose: () => goose.group,
+  goose,
   onShellOpened: () => {
     setGooseIntroPose();
   },
@@ -840,6 +1417,7 @@ initEggIntro({
 
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("keyup", onKeyUp);
+window.addEventListener("wheel", onWheel, { passive: false });
 // MAIN LOOP
 animate()
 function animate () {
@@ -847,7 +1425,14 @@ function animate () {
   leavesMat.uniforms.uTime.value += 0.01; 
   const delta = Math.min(clock.getDelta(), 0.033);
   updateGoose(delta);
+  updateBushVisibility(delta);
   scene.updateMatrixWorld(true);
+  for (const shadow of projectedModelShadows) {
+    updateProjectedModelShadow(shadow);
+  }
+  if (goose.groundShadow) {
+    setProjectedModelShadowOpacity(goose.groundShadow, goose.isJumping ? 0.28 : 0.42);
+  }
   dialogSystem.update();
   if (dog.mixer) {
     dog.mixer.update(delta);
@@ -896,7 +1481,7 @@ function animate () {
 window.addEventListener("resize", () => {
   camera.aspect = document.body.clientWidth / document.body.clientHeight;
   camera.updateProjectionMatrix();
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setPixelRatio(RENDER_PIXEL_RATIO);
   renderer.setSize( document.body.clientWidth, document.body.clientHeight );
 })
 document.addEventListener("mousemove", (e) => pointerMove(e))
@@ -908,6 +1493,9 @@ function killRandom() {
   setTimeout(killRandom, Math.random() * 1500);
 }
 function pointerMove(e) {
+    if (memoryBook?.isOpen()) return;
+    if (goose.group?.userData?.arcadeMenuOpen) return;
+
     pointer.set((e.clientX / window.innerWidth) * 2 - 1,
               -(e.clientY / window.innerHeight) * 2 + 1);
   raycaster.setFromCamera(pointer, camera);
@@ -924,6 +1512,18 @@ function pointerMove(e) {
 }
 
 function onKeyDown(e) {
+  if (memoryBook?.isOpen()) {
+    if (memoryBook.handleKeyDown(e)) {
+      return;
+    }
+    e.preventDefault();
+    return;
+  }
+
+  if (arcadeMenu.handleKeyDown(e)) {
+    return;
+  }
+
   if (handleIntroEnter(e)) {
     return;
   }
@@ -947,10 +1547,13 @@ function onKeyDown(e) {
     }
   }
 
-  if (DEBUG_SKIP_DIALOG && e.code === "KeyE" && dialogSystem.getActiveNpc()) {
+  const activeNpc = dialogSystem.getActiveNpc();
+
+  if (DEBUG_SKIP_DIALOG && e.code === "KeyE" && activeNpc?.id === "dog") {
     e.preventDefault();
-    seatGooseOnBench();
-    return;
+    if (!goose.isSitting) {
+      seatGooseOnBench();
+    }
   }
 
   if (dialogSystem.handleKeyDown(e)) {
@@ -970,6 +1573,15 @@ function onKeyDown(e) {
 }
 
 function onKeyUp(e) {
+  if (memoryBook?.isOpen()) {
+    e.preventDefault();
+    return;
+  }
+
+  if (arcadeMenu.handleKeyUp(e)) {
+    return;
+  }
+
   if (window.__introBlocking) {
     e.preventDefault();
     return;
@@ -987,6 +1599,16 @@ function onKeyUp(e) {
   if (key in keys) {
     e.preventDefault();
     keys[key] = false;
+  }
+}
+
+function onWheel(e) {
+  if (memoryBook?.isOpen()) {
+    return;
+  }
+
+  if (arcadeMenu.handleWheel(e)) {
+    return;
   }
 }
 
@@ -1083,6 +1705,76 @@ function releaseGooseFromBench() {
   goose.group.quaternion.copy(goose.preSitWorldQuaternion);
   goose.group.rotation.set(0, goose.heading, 0);
   keys.space = false;
+}
+
+function positionGooseAtArcade() {
+  if (!goose.group || !arcade.ready || !arcade.group) return false;
+
+  if (goose.isSitting) {
+    releaseGooseFromBench();
+  }
+
+  if (goose.group.parent !== scene) {
+    scene.attach(goose.group);
+  }
+
+  const arcadePosition = new THREE.Vector3();
+  arcade.group.getWorldPosition(arcadePosition);
+
+  const awayFromArcade = goose.group.position.clone().sub(arcadePosition);
+  awayFromArcade.y = 0;
+  if (awayFromArcade.lengthSq() < 0.001) {
+    awayFromArcade.set(1, 0, 0);
+  }
+  awayFromArcade.normalize();
+
+  const standDistance = (arcade.collider?.radius || 0.85)
+    + (goose.colliderRadius || 0.25)
+    + 0.18;
+
+  const targetPosition = arcadePosition.clone().addScaledVector(awayFromArcade, standDistance);
+  targetPosition.y = goose.groundY || goose.group.position.y;
+
+  goose.group.position.copy(targetPosition);
+  goose.groundY = targetPosition.y;
+  goose.heading = Math.atan2(
+    arcadePosition.x - goose.group.position.x,
+    arcadePosition.z - goose.group.position.z,
+  );
+  goose.group.rotation.set(0, goose.heading, 0);
+  goose.moveVelocity = 0;
+  goose.turnVelocity = 0;
+  goose.verticalVelocity = 0;
+  goose.isJumping = false;
+  goose.followActive = false;
+  goose.returningHome = false;
+  goose.returnFacingTarget = null;
+  keys.w = false;
+  keys.a = false;
+  keys.s = false;
+  keys.d = false;
+  keys.arrowup = false;
+  keys.arrowleft = false;
+  keys.arrowdown = false;
+  keys.arrowright = false;
+  keys.space = false;
+  goose.group.userData.arcadeMenuOpen = false;
+
+  if (goose.actions.idle) {
+    switchGooseAction("idle");
+  }
+
+  controls.target.copy(goose.group.position);
+  return true;
+}
+
+function openArcadeMenu() {
+  if (!positionGooseAtArcade()) return false;
+  return arcadeMenu.open();
+}
+
+function closeArcadeMenu() {
+  return arcadeMenu.close();
 }
 
 function startGooseReturnHome(options = {}) {
@@ -1217,6 +1909,9 @@ function updateGoose(delta) {
   if (!goose.group || !goose.group.parent) return;
   if (goose.mixer) {
     goose.mixer.update(delta);
+  }
+  if (goose.group.userData.arcadeMenuOpen) {
+    return;
   }
   if (updateGooseReturnHome(delta)) {
     return;

@@ -8,8 +8,8 @@ export const INTRO_CAMERA_SIDE_OFFSET_START = 0.0;
 export const INTRO_CAMERA_SIDE_OFFSET_END = 0.6;
 export const INTRO_CAMERA_ZOOM_DURATION = 3200;
 const INTRO_CAMERA_ARC_STRENGTH = -1.15;
-export const INTRO_CAMERA_END_POSITION = new THREE.Vector3(7.0, 5.17, -12.57);
-export const INTRO_CAMERA_END_TARGET = new THREE.Vector3(-5.88, 1.11, 0.17);
+export const INTRO_CAMERA_END_POSITION = new THREE.Vector3(5.4, 4.15, -11.5);
+export const INTRO_CAMERA_END_TARGET = new THREE.Vector3(0.15, 2.12, 0.65);
 
 const INTRO_WORLD_ZOOM_DELAY = 450;
 const INTRO_CONTROL_HINT_FADE_DELAY = 220;
@@ -209,13 +209,13 @@ function createControlsHintDom() {
   overlay.className = "intro-controls-hint hidden";
   overlay.setAttribute("aria-hidden", "true");
   overlay.innerHTML = `
-    <div class="intro-controls-row">
-      <span class="intro-controls-label">use</span>
+    <div class="intro-controls-row intro-controls-row-move">
+      <span class="intro-controls-label intro-controls-label-move">use</span>
       <div class="intro-controls-icons" aria-hidden="true">
         <img src="./assets/ui/WASD.png" alt="" class="intro-controls-key intro-controls-key-wasd" />
         <img src="./assets/ui/Arrow.png" alt="" class="intro-controls-key intro-controls-key-arrow" />
       </div>
-      <span class="intro-controls-label">to move</span>
+      <span class="intro-controls-label intro-controls-label-move">to move</span>
     </div>
     <div class="intro-controls-row">
       <span class="intro-controls-label">jump with</span>

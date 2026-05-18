@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "generate:memories": "node scripts/generate-memories.mjs",
+    "build": "node scripts/generate-memories.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}
