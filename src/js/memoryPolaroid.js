@@ -39,6 +39,8 @@ export function createMemoryPolaroid(memory, options = {}) {
       : 0;
   const title = memory?.title || "Untitled memory";
   const dateLabel = formatMemoryDate(memory?.date);
+  const coverImageSrc = memory?.coverImage || memory?.images?.[0]?.thumbnailSrc || memory?.images?.[0]?.src || "";
+  const coverFallbackSrc = memory?.coverFullImage || memory?.images?.[0]?.src || coverImageSrc;
 
   const button = document.createElement("button");
   button.type = "button";
@@ -73,10 +75,17 @@ export function createMemoryPolaroid(memory, options = {}) {
   const image = document.createElement("img");
   image.className = "memory-polaroid-cover";
   image.draggable = false;
-  image.src = memory?.coverImage || "";
+  image.src = coverImageSrc;
   image.alt = title;
   image.loading = options.loadCover === false ? "lazy" : "eager";
   image.decoding = "async";
+  if (coverFallbackSrc && coverFallbackSrc !== coverImageSrc) {
+    image.addEventListener("error", () => {
+      if (image.dataset.fallbackApplied === "true") return;
+      image.dataset.fallbackApplied = "true";
+      image.src = coverFallbackSrc;
+    });
+  }
   imageWrap.appendChild(image);
 
   const dateEl = document.createElement("span");

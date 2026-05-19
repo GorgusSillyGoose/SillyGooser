@@ -261,6 +261,14 @@ const SCENE_TUNING = {
     ],
   },
 };
+const fireflies = {
+  group: new THREE.Group(),
+  texture: null,
+  particles: [],
+  reduceMotionQuery: typeof window.matchMedia === "function"
+    ? window.matchMedia("(prefers-reduced-motion: reduce)")
+    : null,
+};
 const tmpBushViewDirection = new THREE.Vector3();
 const tmpProjectedShadowWorld = new THREE.Vector3();
 const tmpProjectedShadowCenter = new THREE.Vector3();
@@ -270,6 +278,7 @@ let bushRing = null;
 let groundGrassLayer = new THREE.Group();
 const groundShadowLayer = new THREE.Group();
 const projectedModelShadows = [];
+let elapsedSceneTime = 0;
 
 function createProjectedShadowMaterial(opacity) {
   return new THREE.MeshBasicMaterial({
@@ -493,6 +502,172 @@ function createSeededRandom(seed) {
     r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
     return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+function createFireflyTexture() {
+  const sprite = document.createElement("canvas");
+  const size = 96;
+  const context = sprite.getContext("2d");
+
+  if (!context) {
+    return null;
+  }
+
+  sprite.width = size;
+  sprite.height = size;
+
+  const center = size / 2;
+  const radius = size / 2;
+  const halo = context.createRadialGradient(center, center, 0, center, center, radius);
+  halo.addColorStop(0, "rgba(255, 250, 230, 1)");
+  halo.addColorStop(0.12, "rgba(255, 243, 203, 0.96)");
+  halo.addColorStop(0.28, "rgba(255, 210, 110, 0.5)");
+  halo.addColorStop(0.62, "rgba(255, 163, 74, 0.18)");
+  halo.addColorStop(1, "rgba(255, 145, 64, 0)");
+
+  context.fillStyle = halo;
+  context.beginPath();
+  context.arc(center, center, radius, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "rgba(255, 250, 227, 0.95)";
+  context.beginPath();
+  context.arc(center, center, size * 0.045, 0, Math.PI * 2);
+  context.fill();
+
+  const texture = new THREE.CanvasTexture(sprite);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function ensureFireflyTexture() {
+  if (fireflies.texture) return;
+  fireflies.texture = createFireflyTexture();
+}
+
+function clampFireflyToRadius(x, z, maxRadius) {
+  const distanceSq = (x * x) + (z * z);
+  if (distanceSq <= (maxRadius * maxRadius)) {
+    return { x, z };
+  }
+
+  const distance = Math.sqrt(distanceSq) || 1;
+  const scale = maxRadius / distance;
+  return {
+    x: x * scale,
+    z: z * scale,
+  };
+}
+
+function createFireflyParticle(rng) {
+  const randomInRange = (min, max) => min + (rng() * (max - min));
+  const reducedMotion = fireflies.reduceMotionQuery?.matches;
+  const radiusLimit = PLAYABLE_RADIUS * 0.88;
+  const angle = rng() * Math.PI * 2;
+  const radius = 0.85 + Math.sqrt(rng()) * (radiusLimit - 0.85);
+  const anchorX = Math.cos(angle) * radius;
+  const anchorZ = Math.sin(angle) * radius;
+  const warmPalette = [0xffe186, 0xffc86f, 0xffae66];
+  const color = warmPalette[Math.floor(rng() * warmPalette.length)];
+  const material = new THREE.SpriteMaterial({
+    map: fireflies.texture,
+    color,
+    transparent: true,
+    opacity: 0.86,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  });
+  const sprite = new THREE.Sprite(material);
+  const baseScale = reducedMotion ? randomInRange(0.16, 0.24) : randomInRange(0.18, 0.32);
+  sprite.scale.set(baseScale, baseScale, 1);
+  sprite.renderOrder = 8;
+  fireflies.group.add(sprite);
+
+  return {
+    anchorX,
+    anchorY: 0.22 + Math.pow(rng(), 0.72) * 1.65,
+    anchorZ,
+    orbitRadiusX: reducedMotion ? randomInRange(0.08, 0.24) : randomInRange(0.16, 0.48),
+    orbitRadiusZ: reducedMotion ? randomInRange(0.08, 0.22) : randomInRange(0.14, 0.42),
+    orbitSpeed: randomInRange(0.18, reducedMotion ? 0.28 : 0.46),
+    orbitPhase: rng() * Math.PI * 2,
+    orbitPhaseSecondary: rng() * Math.PI * 2,
+    bobAmplitude: reducedMotion ? randomInRange(0.03, 0.08) : randomInRange(0.05, 0.16),
+    bobSpeed: randomInRange(0.5, reducedMotion ? 0.8 : 1.2),
+    bobPhase: rng() * Math.PI * 2,
+    pulseSpeed: randomInRange(0.9, reducedMotion ? 1.1 : 1.7),
+    pulsePhase: rng() * Math.PI * 2,
+    baseOpacity: reducedMotion ? randomInRange(0.58, 0.8) : randomInRange(0.7, 1.0),
+    baseScale,
+    radiusLimit,
+    sprite,
+    material,
+  };
+}
+
+function rebuildFireflies() {
+  ensureFireflyTexture();
+
+  for (const particle of fireflies.particles) {
+    particle.material.dispose();
+  }
+
+  fireflies.group.clear();
+  fireflies.particles = [];
+
+  const rng = createSeededRandom(7113);
+  const count = fireflies.reduceMotionQuery?.matches ? 14 : 24;
+  fireflies.particles = Array.from({ length: count }, () => createFireflyParticle(rng));
+}
+
+function createFireflySwarm() {
+  fireflies.group.name = "firefly-swarm";
+  rebuildFireflies();
+
+  if (fireflies.reduceMotionQuery?.addEventListener) {
+    fireflies.reduceMotionQuery.addEventListener("change", rebuildFireflies);
+  } else if (fireflies.reduceMotionQuery?.addListener) {
+    fireflies.reduceMotionQuery.addListener(rebuildFireflies);
+  }
+}
+
+function updateFireflies(time) {
+  if (!fireflies.particles.length) return;
+
+  for (const particle of fireflies.particles) {
+    const x = particle.anchorX
+      + Math.sin(time * particle.orbitSpeed + particle.orbitPhase) * particle.orbitRadiusX
+      + Math.sin(time * (particle.orbitSpeed * 0.48) + particle.orbitPhaseSecondary) * particle.orbitRadiusX * 0.32;
+    const z = particle.anchorZ
+      + Math.cos(time * (particle.orbitSpeed * 0.88) + particle.orbitPhaseSecondary) * particle.orbitRadiusZ
+      + Math.sin(time * (particle.orbitSpeed * 0.61) + particle.orbitPhase) * particle.orbitRadiusZ * 0.28;
+    const clamped = clampFireflyToRadius(x, z, particle.radiusLimit);
+    const pulse = Math.pow((Math.sin(time * particle.pulseSpeed + particle.pulsePhase) * 0.5) + 0.5, 1.35);
+    const y = particle.anchorY + Math.sin(time * particle.bobSpeed + particle.bobPhase) * particle.bobAmplitude + (pulse * 0.05);
+    const scale = particle.baseScale * (0.86 + pulse * 0.48);
+
+    particle.sprite.position.set(clamped.x, y, clamped.z);
+    particle.sprite.scale.set(scale, scale, 1);
+    particle.material.opacity = Math.min(1, particle.baseOpacity * (0.55 + pulse * 0.75));
+  }
+}
+
+function getViewportSize() {
+  return {
+    width: document.body.clientWidth || window.innerWidth || 1,
+    height: document.body.clientHeight || window.innerHeight || 1,
+  };
+}
+
+function resizeScene() {
+  const { width, height } = getViewportSize();
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(RENDER_PIXEL_RATIO);
+  renderer.setSize(width, height);
 }
 
 function createGrassSprite(texture, {
@@ -1429,11 +1604,12 @@ loader.loadAsync("./assets/models/dog.glb")
     });
   })
 // INIT
-document.body.appendChild(renderer.domElement); 
+renderer.domElement.classList.add("scene-canvas");
+document.body.appendChild(renderer.domElement);
+createFireflySwarm();
 renderer.domElement.style.imageRendering = "pixelated";
 renderer.domElement.style.imageRendering = "crisp-edges";
-renderer.setPixelRatio(RENDER_PIXEL_RATIO);
-renderer.setSize(window.innerWidth, window.innerHeight);
+resizeScene();
 dlight01.position.set(3,6,-3);
 dlight01.lookAt(0,2.4,0);
 PROJECTED_SHADOW_LIGHT.copy(dlight01.position);
@@ -1451,7 +1627,7 @@ controls.maxDistance = 24;
 controls.autoRotate = false;
 controls.enablePan = false;
 controls.touches = {TWO: THREE.TOUCH.ROTATE,};
-scene.add(dlight01, bushRing, tree.group, rayPlane);
+scene.add(dlight01, bushRing, tree.group, fireflies.group, rayPlane);
 scene.add(ground, groundGrassLayer, groundShadowLayer);
 noiseMap.wrapS = THREE.RepeatWrapping;
 noiseMap.wrapT = THREE.RepeatWrapping;
@@ -1478,6 +1654,7 @@ function animate () {
 	requestAnimationFrame(animate);
   leavesMat.uniforms.uTime.value += 0.01; 
   const delta = Math.min(clock.getDelta(), 0.033);
+  elapsedSceneTime += delta;
   updateGoose(delta);
   updateBushVisibility(delta);
   scene.updateMatrixWorld(true);
@@ -1525,16 +1702,12 @@ function animate () {
   if (!window.__introBlocking) {
     controls.update(); 
   }
+  updateFireflies(elapsedSceneTime);
   updateCameraDebugOverlay();
   renderer.render(scene, camera); 
 }
 // EVENTS
-window.addEventListener("resize", () => {
-  camera.aspect = document.body.clientWidth / document.body.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setPixelRatio(RENDER_PIXEL_RATIO);
-  renderer.setSize( document.body.clientWidth, document.body.clientHeight );
-})
+window.addEventListener("resize", resizeScene)
 document.addEventListener("mousemove", (e) => pointerMove(e))
 renderer.domElement.addEventListener("click", handleScenePointerDown)
 // MISC

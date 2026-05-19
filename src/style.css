@@ -36,7 +36,7 @@ body::after {
     linear-gradient(180deg, rgba(63, 39, 86, 0.03), transparent 44%, rgba(18, 12, 28, 0.04));
 }
 
-body > canvas {
+body > canvas.scene-canvas {
   position: fixed;
   inset: 0;
   z-index: 1;

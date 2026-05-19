@@ -9,6 +9,7 @@ const CLOSE_ICON_SRC = new URL("../assets/ui/Close.png", import.meta.url).href;
 const CLOSE_ICON_PRESSED_SRC = new URL("../assets/ui/Close_pressed.png", import.meta.url).href;
 const IMAGES_ICON_SRC = new URL("../assets/ui/Images.png", import.meta.url).href;
 const MEMORY_MANIFEST_SRC = new URL("../assets/Memories/memories.json", import.meta.url).href;
+const MEMORY_ASSET_BASE_URL = new URL("../", import.meta.url);
 const PAGE_NAMES = {
   memories: "memories",
   statistics: "statistics",
@@ -28,6 +29,25 @@ function slugify(value) {
 function getDateTime(value) {
   const date = value instanceof Date ? value : new Date(value);
   return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+}
+
+function resolveMemoryAssetUrl(value) {
+  if (!value) return "";
+
+  const rawValue = String(value).trim();
+  if (!rawValue) return "";
+
+  if (/^(?:[a-z]+:)?\/\//i.test(rawValue) || rawValue.startsWith("data:")) {
+    return rawValue;
+  }
+
+  const appRelativeValue = rawValue.startsWith("/") ? `.${rawValue}` : rawValue;
+
+  try {
+    return new URL(appRelativeValue, MEMORY_ASSET_BASE_URL).href;
+  } catch {
+    return rawValue;
+  }
 }
 
 function attachHorizontalScrollbar(pageEl, scrollEl, contentEl) {
@@ -174,7 +194,8 @@ function normalizeImageEntry(entry, index = 0) {
 
   if (typeof entry === "string") {
     return {
-      src: entry,
+      src: resolveMemoryAssetUrl(entry),
+      thumbnailSrc: resolveMemoryAssetUrl(entry),
       description: "",
       fileName: "",
       index: index + 1,
@@ -185,7 +206,8 @@ function normalizeImageEntry(entry, index = 0) {
   if (!src) return null;
 
   return {
-    src,
+    src: resolveMemoryAssetUrl(src),
+    thumbnailSrc: resolveMemoryAssetUrl(entry.thumbnailSrc || src),
     description: entry.description || entry.caption || "",
     fileName: entry.fileName || entry.name || "",
     index: Number.isFinite(Number(entry.index)) ? Number(entry.index) : index + 1,
@@ -207,7 +229,8 @@ function getMemoryImageEntries(memory) {
 
   if (!entries.length && memory?.coverImage && !seen.has(memory.coverImage)) {
     entries.unshift({
-      src: memory.coverFullImage || memory.coverImage,
+      src: resolveMemoryAssetUrl(memory.coverFullImage || memory.coverImage),
+      thumbnailSrc: resolveMemoryAssetUrl(memory.coverImage || memory.coverFullImage),
       description: memory.description || "",
       fileName: "",
       index: 1,
@@ -221,7 +244,8 @@ function normalizeMemory(memory, fallbackIndex = 0) {
   if (!memory) return null;
 
   const images = getMemoryImageEntries(memory);
-  const coverImage = memory.coverImage || images[0]?.src || "";
+  const coverImage = resolveMemoryAssetUrl(memory.coverImage || images[0]?.thumbnailSrc || images[0]?.src || "");
+  const coverFullImage = resolveMemoryAssetUrl(memory.coverFullImage || images[0]?.src || coverImage);
   const title = memory.title || "Untitled memory";
 
   return {
@@ -230,6 +254,7 @@ function normalizeMemory(memory, fallbackIndex = 0) {
     title,
     date: memory.date || "",
     coverImage,
+    coverFullImage,
     images,
     imageCount: Number.isFinite(Number(memory.imageCount))
       ? Number(memory.imageCount)
