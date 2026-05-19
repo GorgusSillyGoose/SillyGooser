@@ -87,6 +87,13 @@ body.arcade-menu-open {
   font-family: "Press Start 2P", monospace;
 }
 
+.arcade-ui[data-screen="game"] {
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
 .arcade-ui.hidden {
   display: none;
 }
@@ -138,6 +145,18 @@ body.arcade-menu-open {
   overflow: visible;
 }
 
+.arcade-ui-cabinet-shell-menu {
+  width: auto;
+  height: 100vh;
+  aspect-ratio: 86 / 164;
+}
+
+.arcade-ui-cabinet-shell-game {
+  width: auto;
+  height: 100vh;
+  aspect-ratio: 86 / 95;
+}
+
 .arcade-ui-cabinet-image {
   position: absolute;
   inset: 0;
@@ -164,6 +183,18 @@ body.arcade-menu-open {
   padding: 18px 18px 16px;
   background: linear-gradient(180deg, rgba(2, 3, 6, 0.7), rgba(7, 8, 16, 0.38));
   overflow: hidden;
+}
+
+.arcade-ui-screen-game {
+  inset: 17.9% 16.3% 20% 16.3%;
+  padding: 0;
+  gap: 0;
+  background: #000;
+  border-radius: 0;
+}
+
+.arcade-ui-screen-placeholder {
+  padding: 12px 10px;
 }
 
 .arcade-ui-screen::after {
@@ -262,7 +293,6 @@ body.arcade-menu-open {
 
 .arcade-ui-item:focus-visible,
 .arcade-ui-start-button:focus-visible,
-.arcade-ui-back-button:focus-visible,
 .arcade-ui-close:focus-visible {
   outline: 2px solid rgba(255, 214, 145, 0.95);
   outline-offset: 3px;
@@ -469,62 +499,22 @@ body.arcade-menu-open {
 }
 
 .arcade-ui-panel-game {
-  width: min(100%, 920px);
+  width: 100vw;
+  height: 100vh;
   justify-content: center;
+  transform: none;
+  gap: 10px;
 }
 
-.arcade-ui-game-card {
+.arcade-ui-game-heading {
   position: relative;
-  width: min(100%, 840px);
-  padding: 20px;
-  border: 2px solid rgba(255, 193, 122, 0.35);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(20, 16, 32, 0.96), rgba(10, 9, 16, 0.98));
-  box-shadow:
-    0 32px 80px rgba(0, 0, 0, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.07);
-  overflow: hidden;
-}
-
-.arcade-ui-game-card::before {
-  content: "";
-  position: absolute;
-  inset: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-  pointer-events: none;
-}
-
-.arcade-ui-game-header {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 18px;
-  padding-right: 48px;
-}
-
-.arcade-ui-game-kicker {
-  font-size: 8px;
+  z-index: 3;
+  font-size: 14px;
   line-height: 1.1;
   color: #ffcb87;
-  text-transform: uppercase;
-}
-
-.arcade-ui-game-title {
-  font-size: 16px;
-  line-height: 1.1;
   text-shadow: 2px 2px 0 #000;
-}
-
-.arcade-ui-game-body {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 16px;
+  text-align: center;
+  letter-spacing: 0.05em;
 }
 
 .arcade-ui-game-copy {
@@ -532,23 +522,6 @@ body.arcade-menu-open {
   min-width: 0;
   flex-direction: column;
   gap: 12px;
-}
-
-.arcade-ui-game-copy-frame {
-  padding: 0 4px 4px;
-}
-
-.arcade-ui-game-stage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border: 2px solid rgba(255, 193, 122, 0.3);
-  border-radius: 14px;
-  background: #000000;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
 .arcade-ui-game-iframe {
@@ -579,42 +552,6 @@ body.arcade-menu-open {
   line-height: 1.7;
 }
 
-.arcade-ui-back-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  align-self: flex-start;
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 6px;
-  padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.04);
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  text-align: left;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
-  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
-}
-
-.arcade-ui-back-button-title {
-  font-size: 9px;
-  line-height: 1.1;
-}
-
-.arcade-ui-back-button-subtitle {
-  font-size: 6px;
-  line-height: 1.2;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.arcade-ui-back-button:hover {
-  background: rgba(255, 255, 255, 0.07);
-}
-
-.arcade-ui-back-button:active {
-  transform: translateY(1px);
-}
-
 .arcade-ui-close-game {
   top: 14px;
   right: 14px;
@@ -630,10 +567,28 @@ body.arcade-menu-open {
     width: min(92vw, 380px);
   }
 
+  .arcade-ui-cabinet-shell-menu {
+    width: auto;
+    height: 100vh;
+    aspect-ratio: 86 / 164;
+  }
+
+  .arcade-ui-cabinet-shell-game {
+    width: auto;
+    height: 100vh;
+    aspect-ratio: 86 / 95;
+  }
+
   .arcade-ui-screen {
     inset: 18% 19% 46% 19%;
     padding: 10px 10px 8px;
     gap: 8px;
+  }
+
+  .arcade-ui-screen-game {
+    inset: 17.9% 16.3% 20% 16.3%;
+    padding: 0;
+    gap: 0;
   }
 
   .arcade-ui-screen-title {

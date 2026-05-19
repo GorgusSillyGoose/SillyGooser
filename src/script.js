@@ -89,7 +89,7 @@ const raycaster = new THREE.Raycaster();
 const dlight01 = new THREE.DirectionalLight(0xcccccc, 1.8);
 const tree = {group: new THREE.Group()};
 const bench = {group: new THREE.Group(), ready: false};
-const DEBUG_SKIP_DIALOG = true;
+const DEBUG_SKIP_DIALOG = false;
 const DEBUG_SHOW_CAMERA = false;
 const GOOSE_START_TURN_OFFSET = -12 * Math.PI / 180;
 const GOOSE_HEIGHT_OFFSET = -0.14;
@@ -107,12 +107,17 @@ const dog = {
 const gooseJumpSound = new Audio("./assets/Audio/Goose.mp3");
 gooseJumpSound.preload = "auto";
 gooseJumpSound.volume = 0.85;
+const dogBarkSound = new Audio("./assets/Audio/DogBark.mp3");
+dogBarkSound.preload = "auto";
+dogBarkSound.volume = 0.85;
 const goose = {
   group: new THREE.Group(),
   mixer: null,
   actions: {},
   currentAction: null,
   sittingAction: null,
+  clickSpinFinishHandler: null,
+  clickSpinning: false,
   preSitWorldPosition: new THREE.Vector3(),
   preSitWorldQuaternion: new THREE.Quaternion(),
   preSitHeading: 0,
@@ -202,7 +207,9 @@ const PROJECTED_SHADOW_COLOR = 0x080516;
 const PROJECTED_SHADOW_GROUND_Y = -0.033;
 const PROJECTED_SHADOW_LIGHT = new THREE.Vector3(3, 6, -3);
 const GROUND_GRASS_RADIUS = 5.45;
+const PLAYABLE_RADIUS = GROUND_GRASS_RADIUS * 1.2;
 const GROUND_GRASS_MIN_RADIUS = 0.9;
+const gooseClickSound = gooseJumpSound;
 const GRASS_SPRITE_ASSETS = [
   "Grass_Sprite_1.png",
   "Grass_Sprite_2.png",
@@ -281,12 +288,16 @@ function createProjectedShadowMaterial(opacity) {
 
 function collectShadowMeshes(sourceObject, sourceMeshes) {
   if (sourceMeshes?.length) {
-    return sourceMeshes.filter((child) => child?.isMesh && child.geometry?.attributes?.position);
+    return sourceMeshes.filter((child) => (
+      child?.isMesh
+      && child.geometry?.attributes?.position
+      && !child.userData?.clickProxy
+    ));
   }
 
   const meshes = [];
   sourceObject.traverse((child) => {
-    if (child.isMesh && child.geometry?.attributes?.position) {
+    if (child.isMesh && child.geometry?.attributes?.position && !child.userData?.clickProxy) {
       meshes.push(child);
     }
   });
@@ -794,6 +805,50 @@ const dogDialogRoutes = {
   ],
 };
 
+function buildGramophoneMusicDialog() {
+  return [
+    "...actually nevermind.",
+    "The gramophone is broken.",
+    "The nerd who made this place said something about...",
+    "\"music royalties\".",
+    "Whatever that means.",
+    "Then he screamed something about deadlines.",
+    "And disappeared into a dark room with a big beer glass of water.",
+    "So now the gramophone just sits here.",
+    "Looking musical.",
+    "But emotionally unavailable.",
+    "...also it has a crank.",
+    "Who thought of this?",
+    "I have paws.",
+    "You have wings.",
+    "We are the least qualified creatures for this machine.",
+    "Honestly... I don’t understand this world.",
+    "The arcade machine doesn’t even have a power cord.",
+    "But somehow it still works.",
+    "Magical.",
+    "Meanwhile this thing needs manual labor just to play one song.",
+    "Terrible technology.",
+    "Very stylish though.",
+    "Maybe we should try something else instead.",
+    "A game maybe?",
+    "Or story time?",
+    {
+      type: "choice",
+      text: "What would you like to do?\nListen to music, hear a story, or play a game?",
+      options: [
+        { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
+        { text: "Story", next: () => dogDialogRoutes.couchMemories },
+        { text: "Game", next: () => dogDialogRoutes.arcadeGame },
+      ],
+    },
+  ];
+}
+
+function buildStoryDialogFromBench() {
+  seatGooseOnBench();
+  return dogDialogRoutes.couchMemories;
+}
+
 const dogIntroDialogScript = [
   "Oh hey goose, I almost didn’t see you... you’re kinda short and low to the ground, huh?",
   "What’s your name, stranger?",
@@ -830,7 +885,7 @@ const dogIntroDialogScript = [
           text: "What would you like to do?\nListen to music, hear a story, or play a game?",
           options: [
             { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
-            { text: "Story", next: () => dogDialogRoutes.couchMemories },
+            { text: "Story", next: () => buildStoryDialogFromBench() },
             { text: "Game", next: () => dogDialogRoutes.arcadeGame },
           ],
         },
@@ -868,7 +923,7 @@ const dogRevisitDialogScript = [
           text: "What would you like to do?\nListen to music, hear a story, or play a game?",
           options: [
             { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
-            { text: "Story", next: () => dogDialogRoutes.couchMemories },
+            { text: "Story", next: () => buildStoryDialogFromBench() },
             { text: "Game", next: () => dogDialogRoutes.arcadeGame },
           ],
         },
@@ -1044,6 +1099,7 @@ loader.loadAsync("./assets/models/Goose.glb")
       gooseSize.x * gooseWidthSqueeze,
       gooseSize.z
     ) * 0.28 * gooseScale;
+    addClickProxy(goose.group, gooseBox, "goose", 0.78, 0.12);
     scene.add(goose.group);
     goose.groundShadow = createProjectedModelShadow({
       sourceObject: goose.group,
@@ -1231,10 +1287,7 @@ loader.loadAsync("./assets/models/Gramophone.glb")
       promptOffset: new THREE.Vector3(-0.2, 1.75, 0),
       promptText: "Press E for music",
       talkDistance: 2.2,
-      dialogScript: [
-        "You put on some music.",
-        "The gramophone crackles softly.",
-      ],
+      dialogScript: buildGramophoneMusicDialog,
       gifSrc: "./assets/ui/Dog_talk_102x102.gif",
     });
   })
@@ -1357,6 +1410,7 @@ loader.loadAsync("./assets/models/dog.glb")
     }
     dog.ready = true;
     attachDogToBench();
+    addClickProxy(dog.group, dogBox, "dog", 0.9, 0.12);
     dialogSystem.registerNpc({
       id: "dog",
       name: "Mr. Doggo",
@@ -1470,9 +1524,6 @@ function animate () {
 
   if (!window.__introBlocking) {
     controls.update(); 
-    if (goose.followActive) {
-      applyZoomTilt();
-    }
   }
   updateCameraDebugOverlay();
   renderer.render(scene, camera); 
@@ -1485,6 +1536,7 @@ window.addEventListener("resize", () => {
   renderer.setSize( document.body.clientWidth, document.body.clientHeight );
 })
 document.addEventListener("mousemove", (e) => pointerMove(e))
+renderer.domElement.addEventListener("click", handleScenePointerDown)
 // MISC
 killRandom();
 function killRandom() {
@@ -1492,6 +1544,136 @@ function killRandom() {
     queueDeadLeaf(Math.floor(Math.random() * tree.leavesCount)); 
   setTimeout(killRandom, Math.random() * 1500);
 }
+
+function playAudioClip(audio) {
+  if (!audio) return;
+
+  try {
+    audio.currentTime = 0;
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {});
+    }
+  } catch {
+    // Ignore autoplay / decode errors.
+  }
+}
+
+function addClickProxy(object3D, box, label, scaleFactor = 0.75, padding = 0.08) {
+  if (!object3D || !box) return null;
+
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const radius = Math.max(size.x, size.y, size.z) * scaleFactor + padding;
+  const proxy = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 14, 10),
+    new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      depthTest: false,
+    })
+  );
+  proxy.castShadow = false;
+  proxy.receiveShadow = false;
+  proxy.name = `${label}-click-proxy`;
+  proxy.userData.clickProxy = true;
+  proxy.userData.clickTarget = label;
+  proxy.position.copy(center);
+  object3D.add(proxy);
+  return proxy;
+}
+
+function startGooseClickSpin() {
+  if (!goose.group || !goose.actions.spin) return false;
+
+  if (goose.currentAction) {
+    goose.currentAction.stop();
+  }
+
+  goose.clickSpinning = true;
+  goose.followActive = false;
+  goose.moveVelocity = 0;
+  goose.turnVelocity = 0;
+  goose.verticalVelocity = 0;
+  goose.isJumping = false;
+  keys.w = false;
+  keys.a = false;
+  keys.s = false;
+  keys.d = false;
+  keys.arrowup = false;
+  keys.arrowleft = false;
+  keys.arrowdown = false;
+  keys.arrowright = false;
+
+  if (goose.mixer) {
+    if (goose.clickSpinFinishHandler) {
+      goose.mixer.removeEventListener("finished", goose.clickSpinFinishHandler);
+      goose.clickSpinFinishHandler = null;
+    }
+
+    goose.clickSpinFinishHandler = (event) => {
+      if (event.action !== goose.actions.spin) return;
+      goose.mixer.removeEventListener("finished", goose.clickSpinFinishHandler);
+      goose.clickSpinFinishHandler = null;
+      goose.clickSpinning = false;
+      if (goose.actions.idle) {
+        switchGooseAction("idle");
+      }
+    };
+
+    goose.mixer.addEventListener("finished", goose.clickSpinFinishHandler);
+  }
+
+  goose.actions.spin.reset();
+  goose.actions.spin.paused = false;
+  goose.actions.spin.enabled = true;
+  goose.actions.spin.play();
+  goose.currentAction = goose.actions.spin;
+  goose.actions.spin.timeScale = 1.0;
+  return true;
+}
+
+function isDescendantOf(object, root) {
+  let current = object;
+  while (current) {
+    if (current === root) return true;
+    current = current.parent;
+  }
+  return false;
+}
+
+function handleScenePointerDown(e) {
+  if (e.button !== 0) return;
+  if (memoryBook?.isOpen()) return;
+  if (goose.group?.userData?.arcadeMenuOpen) return;
+  if (window.__introBlocking) return;
+
+  pointer.set((e.clientX / window.innerWidth) * 2 - 1,
+              -(e.clientY / window.innerHeight) * 2 + 1);
+  raycaster.setFromCamera(pointer, camera);
+
+  const targets = [];
+  if (goose.group) targets.push(goose.group);
+  if (dog.group) targets.push(dog.group);
+  if (!targets.length) return;
+
+  const hits = raycaster.intersectObjects(targets, true);
+  if (!hits.length) return;
+
+  const hit = hits[0].object;
+  if (isDescendantOf(hit, goose.group)) {
+    playAudioClip(gooseClickSound);
+    startGooseClickSpin();
+    return;
+  }
+
+  if (isDescendantOf(hit, dog.group)) {
+    playAudioClip(dogBarkSound);
+  }
+}
+
 function pointerMove(e) {
     if (memoryBook?.isOpen()) return;
     if (goose.group?.userData?.arcadeMenuOpen) return;
@@ -1718,22 +1900,14 @@ function positionGooseAtArcade() {
     scene.attach(goose.group);
   }
 
+  const targetPosition = findClearStandPosition(arcade.group, {
+    referencePosition: goose.group.position,
+    targetRadius: arcade.collider?.radius,
+    clearance: 0.18,
+  });
+
   const arcadePosition = new THREE.Vector3();
   arcade.group.getWorldPosition(arcadePosition);
-
-  const awayFromArcade = goose.group.position.clone().sub(arcadePosition);
-  awayFromArcade.y = 0;
-  if (awayFromArcade.lengthSq() < 0.001) {
-    awayFromArcade.set(1, 0, 0);
-  }
-  awayFromArcade.normalize();
-
-  const standDistance = (arcade.collider?.radius || 0.85)
-    + (goose.colliderRadius || 0.25)
-    + 0.18;
-
-  const targetPosition = arcadePosition.clone().addScaledVector(awayFromArcade, standDistance);
-  targetPosition.y = goose.groundY || goose.group.position.y;
 
   goose.group.position.copy(targetPosition);
   goose.groundY = targetPosition.y;
@@ -1819,19 +1993,14 @@ function startGooseWalkToObject(targetObject) {
     releaseGooseFromBench();
   }
 
-  const targetPosition = new THREE.Vector3();
-  targetObject.getWorldPosition(targetPosition);
-
-  const fromObjectToGoose = goose.group.position.clone().sub(targetPosition);
-  fromObjectToGoose.y = 0;
-  if (fromObjectToGoose.lengthSq() < 0.001) {
-    fromObjectToGoose.set(1, 0, 0);
-  }
-  fromObjectToGoose.normalize();
+  const targetPosition = findClearStandPosition(targetObject, {
+    referencePosition: goose.group.position,
+    clearance: 0.24,
+  });
 
   goose.returningHome = true;
   goose.returnFacingTarget = targetObject;
-  goose.returnTarget.copy(targetPosition).addScaledVector(fromObjectToGoose, 1.05);
+  goose.returnTarget.copy(targetPosition);
   goose.returnTarget.y = goose.preSitGroundY || goose.preSitWorldPosition.y;
   goose.groundY = goose.returnTarget.y;
   goose.followActive = true;
@@ -1909,6 +2078,9 @@ function updateGoose(delta) {
   if (!goose.group || !goose.group.parent) return;
   if (goose.mixer) {
     goose.mixer.update(delta);
+  }
+  if (goose.clickSpinning) {
+    return;
   }
   if (goose.group.userData.arcadeMenuOpen) {
     return;
@@ -2046,23 +2218,31 @@ function moveGooseWithCollisions(deltaMove) {
   const nextX = currentX + deltaMove.x;
   const nextZ = currentZ + deltaMove.z;
 
-  if (!collidesAt(nextX, nextZ)) {
-    goose.group.position.x = nextX;
-    goose.group.position.z = nextZ;
+  const clampedNext = clampToPlayableRadius(nextX, nextZ);
+  if (!collidesAt(clampedNext.x, clampedNext.z)) {
+    goose.group.position.x = clampedNext.x;
+    goose.group.position.z = clampedNext.z;
     return;
   }
 
-  if (!collidesAt(nextX, currentZ)) {
-    goose.group.position.x = nextX;
+  const clampedX = clampToPlayableRadius(nextX, currentZ);
+  if (!collidesAt(clampedX.x, clampedX.z)) {
+    goose.group.position.x = clampedX.x;
   }
 
-  if (!collidesAt(goose.group.position.x, nextZ)) {
-    goose.group.position.z = nextZ;
+  const clampedZ = clampToPlayableRadius(goose.group.position.x, nextZ);
+  if (!collidesAt(clampedZ.x, clampedZ.z)) {
+    goose.group.position.z = clampedZ.z;
   }
 }
 
 function collidesAt(x, z) {
   const gooseRadius = goose.colliderRadius || 0.25;
+  const boundaryRadius = PLAYABLE_RADIUS - gooseRadius;
+  const boundaryDistanceSq = x * x + z * z;
+  if (boundaryDistanceSq > (boundaryRadius * boundaryRadius)) {
+    return true;
+  }
 
   if (tree.collider) {
     const dx = x - tree.collider.center.x;
@@ -2101,6 +2281,70 @@ function collidesAt(x, z) {
   }
 
   return false;
+}
+
+function clampToPlayableRadius(x, z) {
+  const gooseRadius = goose.colliderRadius || 0.25;
+  const boundaryRadius = Math.max(0, PLAYABLE_RADIUS - gooseRadius);
+  const distanceSq = x * x + z * z;
+
+  if (distanceSq <= (boundaryRadius * boundaryRadius)) {
+    return { x, z };
+  }
+
+  const distance = Math.sqrt(distanceSq) || 1;
+  const scale = boundaryRadius / distance;
+  return {
+    x: x * scale,
+    z: z * scale,
+  };
+}
+
+function estimateWalkRadius(object3D) {
+  if (!object3D) return 0.85;
+  if (object3D.collider?.radius) return object3D.collider.radius;
+
+  const box = new THREE.Box3().setFromObject(object3D);
+  const size = box.getSize(new THREE.Vector3());
+  return Math.max(size.x, size.z) * 0.5;
+}
+
+function findClearStandPosition(targetObject, options = {}) {
+  const targetPosition = new THREE.Vector3();
+  targetObject.getWorldPosition(targetPosition);
+
+  const targetRadius = options.targetRadius ?? estimateWalkRadius(targetObject);
+  const gooseRadius = goose.colliderRadius || 0.25;
+  const clearance = options.clearance ?? 0.3;
+  const baseDistance = options.baseDistance ?? (targetRadius + gooseRadius + clearance);
+  const referencePosition = options.referencePosition || goose.group?.position || targetPosition.clone().add(tmpVector2.set(1, 0, 0));
+
+  const preferredDirection = referencePosition.clone().sub(targetPosition);
+  preferredDirection.y = 0;
+  if (preferredDirection.lengthSq() < 0.001) {
+    preferredDirection.set(1, 0, 0);
+  }
+  preferredDirection.normalize();
+
+  const angleOffsets = [0, Math.PI / 6, -Math.PI / 6, Math.PI / 3, -Math.PI / 3, Math.PI / 2, -Math.PI / 2, Math.PI];
+  const distanceOffsets = [0, 0.18, 0.36, 0.6];
+
+  for (const distanceOffset of distanceOffsets) {
+    const distance = baseDistance + distanceOffset;
+    for (const angleOffset of angleOffsets) {
+      const direction = preferredDirection.clone().applyAxisAngle(tmpUp, angleOffset);
+      const candidate = targetPosition.clone().addScaledVector(direction, distance);
+      candidate.y = goose.groundY || goose.group?.position.y || targetPosition.y;
+      if (!collidesAt(candidate.x, candidate.z)) {
+        return candidate;
+      }
+    }
+  }
+
+  const fallback = targetPosition.clone().addScaledVector(preferredDirection, baseDistance);
+  fallback.y = goose.groundY || goose.group?.position.y || targetPosition.y;
+  const clampedFallback = clampToPlayableRadius(fallback.x, fallback.z);
+  return new THREE.Vector3(clampedFallback.x, fallback.y, clampedFallback.z);
 }
 
 function createXZCollider(object3D, radiusScale = 1, minRadius = 0) {

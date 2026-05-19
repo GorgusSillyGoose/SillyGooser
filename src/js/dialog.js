@@ -742,13 +742,13 @@ export function createDialogSystem(options = {}) {
     dialogState.elements.nameInputEl.addEventListener("keydown", (event) => {
       if (!dialogState.isOpen || !dialogState.awaitingName) return;
 
+      event.stopPropagation();
+
       if (event.code === "Enter") {
         event.preventDefault();
-        event.stopPropagation();
         advance(dialogState);
       } else if (event.code === "Escape") {
         event.preventDefault();
-        event.stopPropagation();
         closeDogDialog(dialogState);
       }
     });

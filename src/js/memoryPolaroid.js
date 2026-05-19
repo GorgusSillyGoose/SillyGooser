@@ -73,11 +73,7 @@ export function createMemoryPolaroid(memory, options = {}) {
   const image = document.createElement("img");
   image.className = "memory-polaroid-cover";
   image.draggable = false;
-  if (options.loadCover === false) {
-    image.dataset.src = memory?.coverImage || "";
-  } else {
-    image.src = memory?.coverImage || "";
-  }
+  image.src = memory?.coverImage || "";
   image.alt = title;
   image.loading = options.loadCover === false ? "lazy" : "eager";
   image.decoding = "async";

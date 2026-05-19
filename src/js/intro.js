@@ -538,12 +538,16 @@ export function finishIntro() {
   }
 
   if (introState.camera) {
-    introState.camera.position.copy(INTRO_CAMERA_END_POSITION);
-    introState.camera.lookAt(INTRO_CAMERA_END_TARGET);
+    introState.camera.lookAt(introState.currentLookTarget);
   }
-  introState.currentLookTarget.copy(INTRO_CAMERA_END_TARGET);
   if (introState.controls?.target) {
-    introState.controls.target.copy(INTRO_CAMERA_END_TARGET);
+    introState.controls.target.copy(introState.currentLookTarget);
+  }
+  if (typeof introState.controls?.saveState === "function") {
+    introState.controls.saveState();
+  }
+  if (typeof introState.controls?.update === "function") {
+    introState.controls.update();
   }
   enableGameplayCamera();
 

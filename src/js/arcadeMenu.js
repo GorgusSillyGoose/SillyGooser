@@ -1,4 +1,5 @@
-const ARCADE_CABINET_SRC = new URL("../assets/ui/Arcade.png", import.meta.url).href;
+const ARCADE_MENU_SRC = new URL("../assets/ui/Arcade_Menu.png", import.meta.url).href;
+const ARCADE_GAME_SRC = new URL("../assets/ui/Arcade_Game.png", import.meta.url).href;
 const ARROW_HINT_SRC = new URL("../assets/ui/Arrow.png", import.meta.url).href;
 const WASD_HINT_SRC = new URL("../assets/ui/WASD.png", import.meta.url).href;
 const SCROLLBAR_SRC = new URL("../assets/ui/ScrollBar.png", import.meta.url).href;
@@ -14,8 +15,8 @@ const GAMES = [
     id: "gulu-gooser",
     title: "Gulu Gooser",
     badge: "Playable",
-    preview: "Launch the local Pacman build inside the arcade frame.",
-    frameText: "Pacman is loaded inside the arcade cabinet.",
+    preview: "Launch Pacman in the cabinet screen.",
+    frameText: "",
     frameSrc: PACMAN_GAME_SRC,
   },
   {
@@ -83,6 +84,10 @@ export function createArcadeMenu(options = {}) {
     return GAMES[state.selectedIndex] || GAMES[0];
   }
 
+  function canStartSelectedGame() {
+    return Boolean(getSelectedGame()?.frameSrc);
+  }
+
   function renderMenu() {
     const selectedGame = getSelectedGame();
     const count = GAMES.length;
@@ -93,7 +98,7 @@ export function createArcadeMenu(options = {}) {
     root.innerHTML = `
       <div class="arcade-ui-backdrop" aria-hidden="true"></div>
       <div class="arcade-ui-panel arcade-ui-panel-menu">
-        <div class="arcade-ui-cabinet-shell">
+        <div class="arcade-ui-cabinet-shell arcade-ui-cabinet-shell-menu">
           <div class="arcade-ui-screen">
             <div class="arcade-ui-screen-header">
               <div class="arcade-ui-screen-kicker">Arcade Menu</div>
@@ -131,10 +136,17 @@ export function createArcadeMenu(options = {}) {
               <div class="arcade-ui-preview-text">${escapeHtml(selectedGame.preview)}</div>
             </div>
           </div>
-          <button type="button" class="arcade-ui-start-button" data-arcade-action="start" aria-label="Start selected game">
+          <button
+            type="button"
+            class="arcade-ui-start-button"
+            data-arcade-action="start"
+            aria-label="Start selected game"
+            aria-disabled="${canStartSelectedGame() ? "false" : "true"}"
+            ${canStartSelectedGame() ? "" : "disabled"}
+          >
             <img src="${RED_BUTTON_SRC}" alt="" aria-hidden="true" class="arcade-ui-start-button-art" draggable="false" />
           </button>
-          <img class="arcade-ui-cabinet-image" src="${ARCADE_CABINET_SRC}" alt="" aria-hidden="true" draggable="false" />
+          <img class="arcade-ui-cabinet-image" src="${ARCADE_MENU_SRC}" alt="" aria-hidden="true" draggable="false" />
           <button type="button" class="arcade-ui-close" data-arcade-action="close" aria-label="Close arcade">
             <img src="${CLOSE_SRC}" alt="" aria-hidden="true" draggable="false" />
           </button>
@@ -184,46 +196,32 @@ export function createArcadeMenu(options = {}) {
         <button type="button" class="arcade-ui-close arcade-ui-close-game" data-arcade-action="close" aria-label="Close arcade">
           <img src="${CLOSE_SRC}" alt="" aria-hidden="true" draggable="false" />
         </button>
-        <div class="arcade-ui-game-card ${isPacmanGame ? "arcade-ui-game-card-pacman" : ""}">
-          <div class="arcade-ui-game-header">
-            <div class="arcade-ui-game-kicker">Arcade Frame</div>
-            <div class="arcade-ui-game-title">${escapeHtml(selectedGame.title)}</div>
-          </div>
-          <div class="arcade-ui-game-body">
-            ${
-              isPacmanGame
-                ? `
-                  <div class="arcade-ui-game-stage">
-                    <iframe
-                      class="arcade-ui-game-iframe"
-                      src="${escapeHtml(selectedGame.frameSrc)}"
-                      title="${escapeHtml(selectedGame.title)} game"
-                      allow="autoplay; fullscreen; gamepad"
-                      loading="eager"
-                      tabindex="0"
-                    ></iframe>
-                  </div>
-                  <div class="arcade-ui-game-copy arcade-ui-game-copy-frame">
-                    <div class="arcade-ui-game-message">${escapeHtml(selectedGame.frameText)}</div>
-                    <div class="arcade-ui-game-subtext">Later we can swap the sound and Pacman art inside <code>src/games/pacman/</code>.</div>
-                    <button type="button" class="arcade-ui-back-button" data-arcade-action="back">
-                      <span class="arcade-ui-back-button-title">Back to list</span>
-                      <span class="arcade-ui-back-button-subtitle">Escape returns here</span>
-                    </button>
-                  </div>
-                `
-                : `
+        <div class="arcade-ui-game-heading">${escapeHtml(selectedGame.title)}</div>
+        <div class="arcade-ui-cabinet-shell arcade-ui-cabinet-shell-game ${isPacmanGame ? "arcade-ui-cabinet-shell-game-pacman" : ""}">
+          ${
+            isPacmanGame
+              ? `
+                <div class="arcade-ui-screen arcade-ui-screen-game">
+                  <iframe
+                    class="arcade-ui-game-iframe"
+                    src="${escapeHtml(selectedGame.frameSrc)}"
+                    title="${escapeHtml(selectedGame.title)} game"
+                    allow="autoplay; fullscreen; gamepad"
+                    loading="eager"
+                    tabindex="0"
+                  ></iframe>
+                </div>
+              `
+              : `
+                <div class="arcade-ui-screen arcade-ui-screen-game arcade-ui-screen-placeholder">
                   <div class="arcade-ui-game-copy">
                     <div class="arcade-ui-game-message">${escapeHtml(selectedGame.frameText)}</div>
                     <div class="arcade-ui-game-subtext">We will build the actual game here later.</div>
-                    <button type="button" class="arcade-ui-back-button" data-arcade-action="back">
-                      <span class="arcade-ui-back-button-title">Back to list</span>
-                      <span class="arcade-ui-back-button-subtitle">Escape returns here</span>
-                    </button>
                   </div>
-                `
-            }
-          </div>
+                </div>
+              `
+          }
+          <img class="arcade-ui-cabinet-image" src="${ARCADE_GAME_SRC}" alt="" aria-hidden="true" draggable="false" />
         </div>
       </div>
     `;
@@ -279,6 +277,10 @@ export function createArcadeMenu(options = {}) {
   }
 
   function startSelectedGame() {
+    if (!canStartSelectedGame()) {
+      return false;
+    }
+
     state.screen = "game";
     render();
     return true;
@@ -427,8 +429,7 @@ export function createArcadeMenu(options = {}) {
 
     if (action === "start") {
       setStartPressed(false);
-      startSelectedGame();
-      return true;
+      return startSelectedGame();
     }
 
     if (action === "back") {
