@@ -3,22 +3,26 @@ export const statisticsData = {
     title: "Shared stats",
     subtitle: "Common totals from the scrapbook.",
     rows: [
-      { label: "Total messages", value: 43056 },
-      { label: "Total words", value: "about 174,097" },
-      { label: "Media omitted", value: 8622 },
+      { label: "Total messages", value: 46870 },
+      { label: "Total words", value: "about 165,937" },
+      { label: "Media omitted", value: 9301 },
     ],
     notes: [
       {
+        title: "Chat date range",
+        body: "December 30, 2025 to May 21, 2026.",
+      },
+      {
         title: "“Bao bao / baobao / 宝宝 / 宝贝”",
-        body: "appeared 1,111+ times. This relationship slowly transformed from English flirting into a Chinese baby-name ecosystem.",
+        body: "appeared about 1,030 times. This relationship slowly transformed from English flirting into a Chinese baby-name ecosystem.",
       },
       {
         title: "“Good night / gn / 晚安”",
-        body: "appeared about 209 times. But somehow “good night” often meant “let’s continue talking for 20 more minutes.”",
+        body: "appeared about 172 times. But somehow “good night” often meant “let’s continue talking for 20 more minutes.”",
       },
       {
         title: "Fast replies",
-        body: "over 80% of replies came within 1 minute. Both of you were clearly pretending not to wait by the phone.",
+        body: "about 81.8% of replies came within 1 minute. Both of you were clearly pretending not to wait by the phone.",
       },
       {
         title: "Busiest day",
@@ -32,52 +36,73 @@ export const statisticsData = {
     rows: [
       {
         label: "Messages sent",
-        dog: 19082,
-        goose: 23974,
-        total: 43056,
-        note: "Goose wins by 4,892 messages. She is officially the chat engine. Mr Doggo is the emotional co-pilot.",
+        dog: 20787,
+        goose: 26083,
+        total: 46870,
+        note: "Goose wins by 5,296 messages. She is officially the chat engine. Mr Doggo is the emotional co-pilot.",
       },
       {
         label: "“Probably” usage",
-        dog: 151,
+        dog: 160,
         goose: 44,
-        total: 195,
+        total: 204,
         note: "“Probably” is Mr Doggo’s emotional defense mechanism.",
       },
       {
         label: "“Nerd” usage",
-        dog: 29,
+        dog: 28,
         goose: 55,
-        total: 84,
+        total: 83,
         note: "Mr Doggo is not beating the allegations.",
       },
       {
         label: "“Grandma” usage",
-        dog: 55,
+        dog: 54,
         goose: 33,
-        total: 88,
+        total: 87,
         note: "Goose calls him nerd, Mr Doggo retaliates with age-based warfare.",
       },
       {
         label: "“Miss” usage",
-        dog: 203,
-        goose: 296,
-        total: 499,
+        dog: 152,
+        goose: 304,
+        total: 456,
         note: "This is not long-distance flirting. This is a mutual missing-you subscription service.",
       },
       {
         label: "😈 usage",
-        dog: 925,
+        dog: 973,
         goose: 85,
-        total: 1010,
+        total: 1058,
         note: "Mr Doggo was running a full-time mischievous side business.",
       },
       {
         label: "😭 usage",
-        dog: 686,
-        goose: 1307,
-        total: 1993,
+        dog: 719,
+        goose: 1441,
+        total: 2160,
         note: "Goose is the CEO of emotional rain.",
+      },
+      {
+        label: "Laughing incidents",
+        dog: 1944,
+        goose: 1744,
+        total: 3688,
+        note: "The chat contains enough hahaha / 😂 / 🤣 energy to qualify as a sitcom transcript.",
+      },
+      {
+        label: "“Sorry” usage",
+        dog: 184,
+        goose: 174,
+        total: 358,
+        note: "A balanced apology economy. Very diplomatic. Very suspicious.",
+      },
+      {
+        label: "Kiss department",
+        dog: 5245,
+        goose: 918,
+        total: 6163,
+        note: "Mr Doggo appears to have attempted to solve distance by weaponizing kiss emojis.",
       },
     ],
   },
@@ -85,41 +110,62 @@ export const statisticsData = {
     title: "Emoji crime scene",
     subtitle: "Top emojis overall.",
     rows: [
-      { label: "😚", value: 3696 },
-      { label: "🥰", value: 2823 },
-      { label: "😁", value: 2129 },
-      { label: "😘", value: 2126 },
-      { label: "😭", value: 1993 },
+      { label: "😚", value: 3709 },
+      { label: "🥰", value: 3091 },
+      { label: "😘", value: 2304 },
+      { label: "😁", value: 2249 },
+      { label: "😭", value: 2160 },
     ],
     note: "This chat has two emotional modes: kissing aggressively or crying dramatically.",
   },
   affectionInflation: {
     title: "Affection inflation index",
     rows: [
-      { label: "Love", value: 1235 },
-      { label: "Babe", value: 1259 },
-      { label: "Baby", value: 421 },
-      { label: "Cute", value: 345 },
+      { label: "Love", value: 1230 },
+      { label: "Babe", value: 1398 },
+      { label: "Baby", value: 438 },
+      { label: "Cute", value: 331 },
+      { label: "Miss", value: 456 },
     ],
     note: "At some point, normal names were abandoned and replaced by a rotating system of babe / baby / bao bao / nerd / grandma.",
+  },
+  sleepDenial: {
+    title: "Sleep denial society",
+    rows: [
+      { label: "Sleep mentions", value: 778 },
+      { label: "Good night attempts", value: 172 },
+      { label: "Messages between 00:00 and 05:59", value: 6288 },
+      { label: "Busiest sleepy hour", value: "02:00 with 1,644 messages" },
+    ],
+    note: "The evidence suggests both suspects knew what sleep was, but treated it as an optional side quest.",
+  },
+  dramaticAchievementAwards: {
+    title: "Dramatic achievement awards",
+    lines: [
+      "Longest solo spam run: Goose sent 66 consecutive messages from January 10 to January 11. That is not texting. That is releasing an audiobook in chapters.",
+      "Doggo counterattack: Mr Doggo’s biggest streak was 52 messages on January 5. A very serious case of keyboard zoomies.",
+      "Peak yap hour: 13:00 was the busiest hour with 4,187 messages. Apparently lunch break means emotional admin.",
+    ],
   },
   spamAchievement: {
     title: "Biggest spam achievement",
     lines: [
       "Goose’s longest message was over 4,000 characters, mostly repeating “drolletje.”",
       "This is not a message. This is Dutch psychological warfare.",
+      "Mr Doggo’s longest counter-spam was a 1,080-character wall of 😚 emojis.",
+      "Peace was never an option.",
     ],
   },
   finalDiagnosis: {
     title: "Final diagnosis",
     lines: [
       "This chat is approximately:",
-      "35% “I miss you”",
-      "25% emojis",
-      "15% bao bao language lessons",
+      "32% “I miss you / babe / baby / bao bao”",
+      "24% emojis with emotional consequences",
+      "15% trying and failing to sleep",
+      "11% food, work, and travel logistics",
       "10% nerd vs grandma combat",
-      "8% travel chaos",
-      "7% trying and failing to sleep",
+      "8% dramatic crimes against the keyboard",
     ],
   },
 };
@@ -468,6 +514,8 @@ export function createStatisticsPage(data = statisticsData) {
   leftScrollContentEl.appendChild(createTogetherStats(data.shared, { includeHeading: false }));
   leftScrollContentEl.appendChild(createValueRowsSection(data.emojiCrimeScene));
   leftScrollContentEl.appendChild(createValueRowsSection(data.affectionInflation));
+  leftScrollContentEl.appendChild(createValueRowsSection(data.sleepDenial));
+  leftScrollContentEl.appendChild(createNoteSection(data.dramaticAchievementAwards));
   leftScrollContentEl.appendChild(createNoteSection(data.spamAchievement));
   leftScrollContentEl.appendChild(createNoteSection(data.finalDiagnosis));
   leftScrollEl.appendChild(leftScrollContentEl);
@@ -487,6 +535,7 @@ export function createStatisticsPage(data = statisticsData) {
   const rightScrollContentEl = document.createElement("div");
   rightScrollContentEl.className = "memory-statistics-page-scroll-content";
   rightScrollContentEl.appendChild(createGooseDogStatsTable(data.comparison, { includeHeading: false }));
+  rightScrollContentEl.appendChild(createNoteSection(data.spamAchievement));
   rightScrollEl.appendChild(rightScrollContentEl);
   rightPageEl.appendChild(rightStaticEl);
   rightPageEl.appendChild(rightScrollEl);
@@ -505,6 +554,8 @@ export const SharedStats = createTogetherStats;
 export const VersusStats = createGooseDogStatsTable;
 export const EmojiCrimeScene = (data = statisticsData.emojiCrimeScene) => createValueRowsSection(data);
 export const AffectionInflationIndex = (data = statisticsData.affectionInflation) => createValueRowsSection(data);
+export const SleepDenialSociety = (data = statisticsData.sleepDenial) => createValueRowsSection(data);
+export const DramaticAchievementAwards = (data = statisticsData.dramaticAchievementAwards) => createNoteSection(data);
 export const BiggestSpamAchievement = (data = statisticsData.spamAchievement) => createNoteSection(data);
 export const FinalDiagnosis = (data = statisticsData.finalDiagnosis) => createNoteSection(data);
 export const StatisticsPage = createStatisticsPage;

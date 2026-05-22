@@ -534,6 +534,19 @@ export function createMemoryBook(options = {}) {
     return memories[clamp(Math.round(state.scrollTarget), 0, getMaxScrollIndex())] || null;
   }
 
+  function openDetailAtIndex(index, imageIndex = 0) {
+    const memoryIndex = clamp(index, 0, getMaxScrollIndex());
+    const memory = memories[memoryIndex];
+    if (!memory) return;
+
+    setScrollTarget(memoryIndex);
+    detailModal.open(memory, {
+      imageIndex,
+      onPrevMemory: memoryIndex > 0 ? () => openDetailAtIndex(memoryIndex - 1) : null,
+      onNextMemory: memoryIndex < getMaxScrollIndex() ? () => openDetailAtIndex(memoryIndex + 1) : null,
+    });
+  }
+
   function getFrameSrc() {
     return state.activeBookPage === PAGE_NAMES.statistics
       ? BOOK_FRAME_STATISTICS
@@ -906,7 +919,7 @@ export function createMemoryBook(options = {}) {
       event.preventDefault();
       const memory = getActiveMemory();
       if (memory) {
-        detailModal.open(memory);
+        openDetailAtIndex(Math.round(state.scrollTarget));
       }
       return;
     }

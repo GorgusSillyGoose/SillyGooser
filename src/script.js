@@ -81,12 +81,16 @@ const scene = new THREE.Scene();
 const loader = new GLTFLoader();
 const camera = new THREE.PerspectiveCamera(35, window.innerWidth/window.innerHeight, 0.001, 1000);
 const renderer = new THREE.WebGLRenderer({alpha: true});
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const controls = new OrbitControls(camera, renderer.domElement);
 const dummy = new THREE.Object3D();
 const matrix = new THREE.Matrix4();
 const pointer = new THREE.Vector2(); 
 const raycaster = new THREE.Raycaster();
 const dlight01 = new THREE.DirectionalLight(0xcccccc, 1.8);
+const hemiLight = new THREE.HemisphereLight(0xf4ecd8, 0x6f6558, 0.55);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.12);
 const tree = {group: new THREE.Group()};
 const bench = {group: new THREE.Group(), ready: false};
 const DEBUG_SKIP_DIALOG = false;
@@ -103,6 +107,15 @@ const dog = {
   ready: false,
   mixer: null,
   action: null,
+};
+const arcadeScreenFlicker = {
+  entries: [],
+  materials: [],
+  baseColors: [],
+  baseEmissive: [],
+  baseEmissiveIntensity: [],
+  baseOpacity: [],
+  light: null,
 };
 const gooseJumpSound = new Audio("./assets/Audio/Goose.mp3");
 gooseJumpSound.preload = "auto";
@@ -293,6 +306,96 @@ function createProjectedShadowMaterial(opacity) {
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -2,
   });
+}
+
+function isArcadeScreenMesh(mesh) {
+  const label = `${mesh?.name || ""} ${mesh?.material?.name || ""}`.toLowerCase();
+  return label.includes("screen")
+    || label.includes("display")
+    || label.includes("monitor")
+    || label.includes("window")
+    || label.includes("glass")
+    || label.includes("crt");
+}
+
+function collectArcadeScreenCandidates(root) {
+  const candidates = [];
+  root?.traverse((child) => {
+    if (!child.isMesh || !child.geometry?.attributes?.position) return;
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.forEach((material, materialIndex) => {
+      const name = `${material?.name || ""}`.toLowerCase();
+      if (name === "black") {
+        candidates.push({ child, material, materialIndex });
+      }
+    });
+  });
+
+  if (candidates.length) {
+    return candidates;
+  }
+
+  const fallback = [];
+  root?.traverse((child) => {
+    if (!child.isMesh || !child.geometry?.attributes?.position) return;
+    const geom = child.geometry.clone();
+    geom.computeBoundingBox();
+    const size = new THREE.Vector3();
+    geom.boundingBox?.getSize(size);
+    const thickness = Math.min(size.x || 0, size.y || 0, size.z || 0);
+    const dims = [size.x || 0, size.y || 0, size.z || 0].sort((a, b) => b - a);
+    const faceArea = dims[0] * Math.max(dims[1], 0.001);
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    fallback.push({ child, material: materials[0], materialIndex: 0, thickness, faceArea });
+  });
+
+  return fallback
+    .filter((entry) => entry.thickness > 0)
+    .sort((a, b) => (a.thickness - b.thickness) || (b.faceArea - a.faceArea))
+    .slice(0, 1);
+}
+
+function setupArcadeScreenFlicker(root) {
+  arcadeScreenFlicker.entries = collectArcadeScreenCandidates(root);
+  arcadeScreenFlicker.materials = [];
+  arcadeScreenFlicker.baseColors = [];
+  arcadeScreenFlicker.baseEmissive = [];
+  arcadeScreenFlicker.baseEmissiveIntensity = [];
+  arcadeScreenFlicker.baseOpacity = [];
+
+  for (const entry of arcadeScreenFlicker.entries) {
+    const original = entry.material;
+    if (!original) continue;
+
+    const material = original.clone ? original.clone() : original;
+    material.transparent = true;
+    if (material.color) {
+      arcadeScreenFlicker.baseColors.push(new THREE.Color(0x000000));
+      material.color.set(0x000000);
+    } else {
+      arcadeScreenFlicker.baseColors.push(new THREE.Color(0x000000));
+    }
+    if (material.emissive) {
+      arcadeScreenFlicker.baseEmissive.push(new THREE.Color(0x000000));
+      arcadeScreenFlicker.baseEmissiveIntensity.push(0);
+      material.emissive.set(0x000000);
+      material.emissiveIntensity = 0;
+    } else {
+      arcadeScreenFlicker.baseEmissive.push(new THREE.Color(0x000000));
+      arcadeScreenFlicker.baseEmissiveIntensity.push(0);
+    }
+    arcadeScreenFlicker.baseOpacity.push(material.opacity ?? 1);
+    if (Array.isArray(entry.child.material)) {
+      entry.child.material[entry.materialIndex] = material;
+    } else {
+      entry.child.material = material;
+    }
+    arcadeScreenFlicker.materials.push(material);
+  }
+}
+
+function updateArcadeScreenFlicker(time) {
+  return time;
 }
 
 function collectShadowMeshes(sourceObject, sourceMeshes) {
@@ -1011,8 +1114,8 @@ function buildGramophoneMusicDialog() {
       type: "choice",
       text: "What would you like to do?\nListen to music, hear a story, or play a game?",
       options: [
-        { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
-        { text: "Story", next: () => dogDialogRoutes.couchMemories },
+        { text: "Music", next: () => buildMusicDialogFromBench() },
+        { text: "Story", next: () => buildStoryDialogFromBench() },
         { text: "Game", next: () => dogDialogRoutes.arcadeGame },
       ],
     },
@@ -1022,6 +1125,11 @@ function buildGramophoneMusicDialog() {
 function buildStoryDialogFromBench() {
   seatGooseOnBench();
   return dogDialogRoutes.couchMemories;
+}
+
+function buildMusicDialogFromBench() {
+  seatGooseOnBench();
+  return dogDialogRoutes.gramophoneMusic;
 }
 
 const dogIntroDialogScript = [
@@ -1059,7 +1167,7 @@ const dogIntroDialogScript = [
           type: "choice",
           text: "What would you like to do?\nListen to music, hear a story, or play a game?",
           options: [
-            { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
+            { text: "Music", next: () => buildMusicDialogFromBench() },
             { text: "Story", next: () => buildStoryDialogFromBench() },
             { text: "Game", next: () => dogDialogRoutes.arcadeGame },
           ],
@@ -1097,7 +1205,7 @@ const dogRevisitDialogScript = [
           type: "choice",
           text: "What would you like to do?\nListen to music, hear a story, or play a game?",
           options: [
-            { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
+            { text: "Music", next: () => buildMusicDialogFromBench() },
             { text: "Story", next: () => buildStoryDialogFromBench() },
             { text: "Game", next: () => dogDialogRoutes.arcadeGame },
           ],
@@ -1132,7 +1240,7 @@ groundTexture.center.set(0.5, 0.5);
 groundTexture.rotation = -135* Math.PI / 180;
 groundTexture.wrapS = THREE.ClampToEdgeWrapping;
 groundTexture.wrapT = THREE.ClampToEdgeWrapping;
-const groundMaterial = new THREE.MeshBasicMaterial({
+const groundMaterial = new THREE.MeshLambertMaterial({
   map: groundTexture,
   transparent: true,
   depthWrite: false,
@@ -1143,6 +1251,7 @@ ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.07;
 ground.renderOrder = -10;
 ground.frustumCulled = false;
+ground.receiveShadow = true;
 // MATERIALS
 const leavesMat = new THREE.ShaderMaterial({
   lights: true,
@@ -1168,6 +1277,8 @@ loader.loadAsync("./assets/models/tree.glb")
   tree.pole = obj.scene.getObjectByName("Pole");
   tree.pole.material = new THREE.MeshToonMaterial({map: tree.pole.material.map});
   tree.pole.position.y -= 0.1;
+  tree.pole.castShadow = true;
+  tree.pole.receiveShadow = true;
   // Each vertex of crown mesh will be a leaf
   // Crown mesh won't be visible in scene
   tree.crown = obj.scene.getObjectByName("Leaves");
@@ -1182,6 +1293,8 @@ loader.loadAsync("./assets/models/tree.glb")
   tree.deadID = []; 
   tree.leafGeometry = obj.scene.getObjectByName("Leaf").geometry; 
   tree.leaves = new THREE.InstancedMesh(tree.leafGeometry, leavesMat, tree.leavesCount); 
+  tree.leaves.castShadow = true;
+  tree.leaves.receiveShadow = false;
   for (let i = 0; i < tree.leavesCount; i++) { 
     dummy.position.x = tree.crown.geometry.attributes.position.array[i*3];
     dummy.position.y = tree.crown.geometry.attributes.position.array[i*3+1];
@@ -1200,8 +1313,8 @@ loader.loadAsync("./assets/models/tree.glb")
   tree.collider = createXZCollider(tree.pole, 0.65, 0.45);
   createProjectedModelShadow({
     sourceObject: tree.pole,
-    opacity: 0.34,
-    blur: 4.2,
+    opacity: 0.28,
+    blur: 5.2,
     flatness: 0.34,
     length: 0.62,
     scaleX: 1.08,
@@ -1210,8 +1323,8 @@ loader.loadAsync("./assets/models/tree.glb")
   });
   createProjectedModelShadow({
     sourceObject: tree.crown,
-    opacity: 0.16,
-    blur: 5.6,
+    opacity: 0.12,
+    blur: 6.8,
     flatness: 0.2,
     length: 0.48,
     scaleX: 1.05,
@@ -1227,8 +1340,8 @@ loader.loadAsync("./assets/models/Goose.glb")
     goose.group = obj.scene;
     goose.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         const sourceMaterial = child.material || {};
         const isIris = (sourceMaterial.name || child.name || "").toLowerCase().includes("iris");
         child.material = new THREE.MeshToonMaterial({
@@ -1278,8 +1391,8 @@ loader.loadAsync("./assets/models/Goose.glb")
     scene.add(goose.group);
     goose.groundShadow = createProjectedModelShadow({
       sourceObject: goose.group,
-      opacity: 0.42,
-      blur: 3.2,
+      opacity: 0.34,
+      blur: 4.4,
       flatness: 0.3,
       length: 0.56,
       scaleX: 1.08,
@@ -1343,6 +1456,12 @@ loader.loadAsync("./assets/models/Goose.glb")
 loader.loadAsync("./assets/models/bench.glb")
   .then(obj => {
     bench.group = obj.scene;
+    bench.group.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
     const benchBox = new THREE.Box3().setFromObject(bench.group);
     const benchSize = benchBox.getSize(new THREE.Vector3());
     const benchCenter = benchBox.getCenter(new THREE.Vector3());
@@ -1359,8 +1478,8 @@ loader.loadAsync("./assets/models/bench.glb")
     scene.add(bench.group);
     createProjectedModelShadow({
       sourceObject: bench.group,
-      opacity: 0.38,
-      blur: 4.8,
+      opacity: 0.31,
+      blur: 5.8,
       flatness: 0.3,
       length: 0.58,
       scaleX: 1.18,
@@ -1370,13 +1489,13 @@ loader.loadAsync("./assets/models/bench.glb")
     bench.ready = true;
     attachDogToBench();
   })
-loader.loadAsync("./assets/models/nest.glb")
+  loader.loadAsync("./assets/models/nest.glb")
   .then(obj => {
     nest.group = obj.scene;
     nest.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         const sourceMaterial = child.material || {};
         child.material = new THREE.MeshToonMaterial({
           map: sourceMaterial.map || null,
@@ -1412,13 +1531,13 @@ loader.loadAsync("./assets/models/nest.glb")
     nest.ready = true;
     placeGooseAtNestStart();
   })
-loader.loadAsync("./assets/models/Gramophone.glb")
+  loader.loadAsync("./assets/models/Gramophone.glb")
   .then(obj => {
     gramophone.group = obj.scene;
     gramophone.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         // Keep the original GLB material so the gramophone retains its texture/palette.
         if (Array.isArray(child.material)) {
           child.material = child.material.map((material) => material?.clone?.() || material);
@@ -1444,8 +1563,8 @@ loader.loadAsync("./assets/models/Gramophone.glb")
     scene.add(gramophone.group);
     createProjectedModelShadow({
       sourceObject: gramophone.group,
-      opacity: 0.4,
-      blur: 4.2,
+      opacity: 0.32,
+      blur: 5.0,
       flatness: 0.26,
       length: 0.66,
       scaleX: 1.08,
@@ -1466,13 +1585,13 @@ loader.loadAsync("./assets/models/Gramophone.glb")
       gifSrc: "./assets/ui/Dog_talk_102x102.gif",
     });
   })
-loader.loadAsync("./assets/models/Arcade.glb")
+  loader.loadAsync("./assets/models/Arcade.glb")
   .then(obj => {
     arcade.group = obj.scene;
     arcade.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         const sourceMaterial = child.material || {};
         if (Array.isArray(child.material)) {
           child.material = child.material.map((material) => material?.clone?.() || material);
@@ -1502,10 +1621,11 @@ loader.loadAsync("./assets/models/Arcade.glb")
     arcade.group.rotation.y = 110 * Math.PI / 180;
     arcade.collider = createXZCollider(arcade.group, 0.85, 0.55);
     scene.add(arcade.group);
+    setupArcadeScreenFlicker(arcade.group);
     createProjectedModelShadow({
       sourceObject: arcade.group,
-      opacity: 0.42,
-      blur: 5,
+      opacity: 0.34,
+      blur: 6.0,
       flatness: 0.24,
       length: 0.7,
       scaleX: 1.12,
@@ -1530,13 +1650,13 @@ loader.loadAsync("./assets/models/Arcade.glb")
       onInteract: () => openArcadeMenu(),
     });
   })
-loader.loadAsync("./assets/models/dog.glb")
+  loader.loadAsync("./assets/models/dog.glb")
   .then(obj => {
     dog.group = obj.scene;
     dog.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         const sourceMaterial = child.material || {};
         child.material = new THREE.MeshToonMaterial({
           map: sourceMaterial.map || null,
@@ -1568,8 +1688,8 @@ loader.loadAsync("./assets/models/dog.glb")
     dog.group.rotation.y = 220 * Math.PI / 180;
     dog.groundShadow = createProjectedModelShadow({
       sourceObject: dog.group,
-      opacity: 0.3,
-      blur: 3.2,
+      opacity: 0.24,
+      blur: 4.2,
       flatness: 0.33,
       length: 0.48,
       scaleX: 1.05,
@@ -1610,16 +1730,27 @@ createFireflySwarm();
 renderer.domElement.style.imageRendering = "pixelated";
 renderer.domElement.style.imageRendering = "crisp-edges";
 resizeScene();
-dlight01.position.set(3,6,-3);
+dlight01.position.set(2.8,7.2,-2.8);
 dlight01.lookAt(0,2.4,0);
+dlight01.castShadow = true;
+dlight01.shadow.mapSize.set(2048, 2048);
+dlight01.shadow.radius = 6;
+dlight01.shadow.camera.near = 0.5;
+dlight01.shadow.camera.far = 30;
+dlight01.shadow.camera.left = -10;
+dlight01.shadow.camera.right = 10;
+dlight01.shadow.camera.top = 10;
+dlight01.shadow.camera.bottom = -10;
+dlight01.shadow.bias = -0.0005;
+dlight01.shadow.normalBias = 0.02;
 PROJECTED_SHADOW_LIGHT.copy(dlight01.position);
 rayPlane.visible = false;
 bushRing = createBushRing();
 groundGrassLayer = createGroundGrassLayer();
 camera.position.set(-7,1,-12);
 controls.target = new THREE.Vector3(0,2.4,0);
-controls.minPolarAngle = 0.65;
-controls.maxPolarAngle = 1.35; 
+controls.minPolarAngle = 0.25;
+controls.maxPolarAngle = 1.45; 
 controls.enableDamping = true;
 controls.enableZoom = true;
 controls.minDistance = 6;
@@ -1628,6 +1759,7 @@ controls.autoRotate = false;
 controls.enablePan = false;
 controls.touches = {TWO: THREE.TOUCH.ROTATE,};
 scene.add(dlight01, bushRing, tree.group, fireflies.group, rayPlane);
+scene.add(hemiLight, ambientLight);
 scene.add(ground, groundGrassLayer, groundShadowLayer);
 noiseMap.wrapS = THREE.RepeatWrapping;
 noiseMap.wrapT = THREE.RepeatWrapping;

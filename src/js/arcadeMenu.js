@@ -196,7 +196,6 @@ export function createArcadeMenu(options = {}) {
         <button type="button" class="arcade-ui-close arcade-ui-close-game" data-arcade-action="close" aria-label="Close arcade">
           <img src="${CLOSE_SRC}" alt="" aria-hidden="true" draggable="false" />
         </button>
-        <div class="arcade-ui-game-heading">${escapeHtml(selectedGame.title)}</div>
         <div class="arcade-ui-cabinet-shell arcade-ui-cabinet-shell-game ${isPacmanGame ? "arcade-ui-cabinet-shell-game-pacman" : ""}">
           ${
             isPacmanGame
@@ -373,9 +372,6 @@ export function createArcadeMenu(options = {}) {
         backToMenu();
         return true;
       }
-
-      event.preventDefault();
-      return true;
     }
 
     event.preventDefault();
