@@ -1,6 +1,7 @@
 import { formatMemoryDate } from "./memoryPolaroid.js";
 
 const CLOSE_ICON_SRC = new URL("../assets/ui/Close.png", import.meta.url).href;
+const CLOSE_ICON_PRESSED_SRC = new URL("../assets/ui/Close_pressed.png", import.meta.url).href;
 
 function resolveImageSources(memory) {
   const sources = [];
@@ -64,21 +65,6 @@ function getStackWheelDelta(event, delta) {
   return isLikelyDiscreteMouseWheel(event, delta) ? -normalizedDelta : normalizedDelta;
 }
 
-function createMetaRow(label, value) {
-  const row = document.createElement("div");
-  row.className = "memory-detail-meta-row";
-
-  const labelEl = document.createElement("dt");
-  labelEl.textContent = label;
-
-  const valueEl = document.createElement("dd");
-  valueEl.textContent = value || "-";
-
-  row.appendChild(labelEl);
-  row.appendChild(valueEl);
-  return row;
-}
-
 export function createMemoryDetailModal() {
   const rootEl = document.createElement("div");
   rootEl.className = "memory-detail-modal hidden";
@@ -94,19 +80,18 @@ export function createMemoryDetailModal() {
         <h3 id="memory-detail-title" class="memory-detail-title"></h3>
         <p class="memory-detail-date"></p>
         <p class="memory-detail-description"></p>
-        <dl class="memory-detail-meta"></dl>
-        <p class="memory-detail-hint">Scroll the stack to lift each polaroid.</p>
+        <p class="memory-detail-hint">Arrow up/down or scroll to lift each polaroid.</p>
       </aside>
       <section class="memory-detail-stack-panel" aria-label="Polaroid stack">
         <div class="memory-detail-stack-stage" tabindex="0">
           <div class="memory-detail-stack"></div>
         </div>
         <div class="memory-detail-stack-controls">
-          <button type="button" class="memory-detail-nav-button memory-detail-nav-button-prev" aria-label="Restack previous polaroid">
+          <button type="button" class="memory-detail-nav-button memory-detail-nav-button-prev" aria-label="Previous memory">
             <span aria-hidden="true">Previous</span>
           </button>
           <div class="memory-detail-image-caption" aria-live="polite"></div>
-          <button type="button" class="memory-detail-nav-button memory-detail-nav-button-next" aria-label="Lift next polaroid">
+          <button type="button" class="memory-detail-nav-button memory-detail-nav-button-next" aria-label="Next memory">
             <span aria-hidden="true">Next</span>
           </button>
         </div>
@@ -117,7 +102,6 @@ export function createMemoryDetailModal() {
   const titleEl = rootEl.querySelector(".memory-detail-title");
   const dateEl = rootEl.querySelector(".memory-detail-date");
   const descriptionEl = rootEl.querySelector(".memory-detail-description");
-  const metaEl = rootEl.querySelector(".memory-detail-meta");
   const stackPanelEl = rootEl.querySelector(".memory-detail-stack-panel");
   const stackStageEl = rootEl.querySelector(".memory-detail-stack-stage");
   const stackEl = rootEl.querySelector(".memory-detail-stack");
@@ -125,6 +109,7 @@ export function createMemoryDetailModal() {
   const prevButton = rootEl.querySelector(".memory-detail-nav-button-prev");
   const nextButton = rootEl.querySelector(".memory-detail-nav-button-next");
   const closeButton = rootEl.querySelector(".memory-detail-close");
+  const closeIconEl = rootEl.querySelector(".memory-detail-close-icon");
 
   const state = {
     isOpen: false,
@@ -135,6 +120,8 @@ export function createMemoryDetailModal() {
     stackRafId: 0,
     wheelCarry: 0,
     onClose: null,
+    onPrevMemory: null,
+    onNextMemory: null,
     onPrevImage: null,
     onNextImage: null,
     closeTimer: 0,
@@ -260,7 +247,6 @@ export function createMemoryDetailModal() {
       if (titleEl) titleEl.textContent = "";
       if (dateEl) dateEl.textContent = "";
       if (descriptionEl) descriptionEl.textContent = "";
-      if (metaEl) metaEl.innerHTML = "";
       if (stackEl) stackEl.innerHTML = "";
       if (captionEl) captionEl.textContent = "";
       if (prevButton) prevButton.disabled = true;
@@ -277,16 +263,6 @@ export function createMemoryDetailModal() {
       descriptionEl.textContent = currentImage?.description || memory.description || "";
     }
 
-    if (metaEl) {
-      metaEl.innerHTML = "";
-      metaEl.appendChild(createMetaRow("Photos", String(sources.length)));
-      metaEl.appendChild(createMetaRow("Location", memory.location || memory.folderName || "Scrapbook"));
-      metaEl.appendChild(createMetaRow("Current note", currentImage?.description || memory.description || "Saved moment"));
-      if (currentImage?.fileName) {
-        metaEl.appendChild(createMetaRow("File", currentImage.fileName));
-      }
-    }
-
     if (captionEl) {
       captionEl.textContent = currentImage?.description || memory.title || "Polaroid";
     }
@@ -300,10 +276,10 @@ export function createMemoryDetailModal() {
     updateStackCards(sources);
 
     if (prevButton) {
-      prevButton.disabled = sources.length <= 1 || imageIndex <= 0;
+      prevButton.disabled = typeof state.onPrevMemory !== "function";
     }
     if (nextButton) {
-      nextButton.disabled = sources.length <= 1 || imageIndex >= maxIndex;
+      nextButton.disabled = typeof state.onNextMemory !== "function";
     }
   }
 
@@ -317,6 +293,8 @@ export function createMemoryDetailModal() {
     state.wheelCarry = 0;
     state.isClosing = false;
     state.onClose = typeof options.onClose === "function" ? options.onClose : null;
+    state.onPrevMemory = typeof options.onPrevMemory === "function" ? options.onPrevMemory : null;
+    state.onNextMemory = typeof options.onNextMemory === "function" ? options.onNextMemory : null;
     state.onPrevImage = typeof options.onPrevImage === "function" ? options.onPrevImage : null;
     state.onNextImage = typeof options.onNextImage === "function" ? options.onNextImage : null;
     state.isOpen = Boolean(memory);
@@ -357,6 +335,8 @@ export function createMemoryDetailModal() {
       state.wheelCarry = 0;
       state.isClosing = false;
       state.onClose = null;
+      state.onPrevMemory = null;
+      state.onNextMemory = null;
       state.onPrevImage = null;
       state.onNextImage = null;
       rootEl.classList.remove("is-closing");
@@ -369,7 +349,7 @@ export function createMemoryDetailModal() {
     updateDom();
   }
 
-  function moveStack(direction) {
+  function moveImage(direction) {
     if (direction < 0 && typeof state.onPrevImage === "function") {
       state.onPrevImage();
       return;
@@ -383,6 +363,21 @@ export function createMemoryDetailModal() {
     setImageIndex(clampIndex(state.imageIndex + direction, maxIndex));
   }
 
+  function moveMemory(direction) {
+    if (direction < 0 && typeof state.onPrevMemory === "function") {
+      state.onPrevMemory();
+      return;
+    }
+    if (direction > 0 && typeof state.onNextMemory === "function") {
+      state.onNextMemory();
+    }
+  }
+
+  function setClosePressed(isPressed) {
+    if (!closeIconEl) return;
+    closeIconEl.src = isPressed ? CLOSE_ICON_PRESSED_SRC : CLOSE_ICON_SRC;
+  }
+
   closeButton.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -391,6 +386,27 @@ export function createMemoryDetailModal() {
   closeButton.addEventListener("pointerdown", (event) => {
     event.preventDefault();
     event.stopPropagation();
+    setClosePressed(true);
+  });
+  closeButton.addEventListener("pointerup", () => {
+    setClosePressed(false);
+  });
+  closeButton.addEventListener("pointerleave", () => {
+    setClosePressed(false);
+  });
+  closeButton.addEventListener("pointercancel", () => {
+    setClosePressed(false);
+  });
+  closeButton.addEventListener("keydown", (event) => {
+    if (event.code !== "Space" && event.code !== "Enter") return;
+    setClosePressed(true);
+  });
+  closeButton.addEventListener("keyup", (event) => {
+    if (event.code !== "Space" && event.code !== "Enter") return;
+    setClosePressed(false);
+  });
+  closeButton.addEventListener("blur", () => {
+    setClosePressed(false);
   });
   rootEl.querySelector(".memory-detail-backdrop").addEventListener("click", (event) => {
     event.preventDefault();
@@ -405,8 +421,8 @@ export function createMemoryDetailModal() {
     }
   });
 
-  prevButton.addEventListener("click", () => moveStack(-1));
-  nextButton.addEventListener("click", () => moveStack(1));
+  prevButton.addEventListener("click", () => moveMemory(-1));
+  nextButton.addEventListener("click", () => moveMemory(1));
 
   function handleStackWheel(event) {
     if (!state.isOpen || state.isClosing) return;
@@ -427,11 +443,11 @@ export function createMemoryDetailModal() {
 
     const threshold = 90;
     while (state.wheelCarry >= threshold) {
-      moveStack(1);
+      moveImage(1);
       state.wheelCarry -= threshold;
     }
     while (state.wheelCarry <= -threshold) {
-      moveStack(-1);
+      moveImage(-1);
       state.wheelCarry += threshold;
     }
   }
@@ -448,15 +464,31 @@ export function createMemoryDetailModal() {
       return;
     }
 
-    if (event.code === "ArrowUp" || event.code === "ArrowLeft") {
+    if (event.code === "ArrowUp") {
       event.preventDefault();
       event.stopPropagation();
-      moveStack(-1);
+      moveImage(-1);
+      return;
     }
-    if (event.code === "ArrowDown" || event.code === "ArrowRight" || event.code === "Space") {
+
+    if (event.code === "ArrowDown" || event.code === "Space") {
       event.preventDefault();
       event.stopPropagation();
-      moveStack(1);
+      moveImage(1);
+      return;
+    }
+
+    if (event.code === "ArrowLeft") {
+      event.preventDefault();
+      event.stopPropagation();
+      moveMemory(-1);
+      return;
+    }
+
+    if (event.code === "ArrowRight") {
+      event.preventDefault();
+      event.stopPropagation();
+      moveMemory(1);
     }
   });
 

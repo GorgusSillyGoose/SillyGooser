@@ -54,6 +54,8 @@ const introState = {
   onZoomComplete: null,
   crackSounds: [],
   backgroundMusic: null,
+  canStartZoom: null,
+  onZoomBlocked: null,
 };
 
 function createAudio(src, volume = 1) {
@@ -575,6 +577,13 @@ export function handleIntroEnter(event) {
   }
 
   if (introState.phase === "peek") {
+    if (typeof introState.canStartZoom === "function" && !introState.canStartZoom()) {
+      setIntroText("Loading...", false);
+      if (typeof introState.onZoomBlocked === "function") {
+        introState.onZoomBlocked();
+      }
+      return true;
+    }
     openShellFully();
     startIntroCameraZoomOut();
     return true;
@@ -593,6 +602,8 @@ export function initEggIntro(options = {}) {
   introState.gooseRef = options.goose || window.goose || window.player || null;
   introState.onShellOpened = typeof options.onShellOpened === "function" ? options.onShellOpened : null;
   introState.onZoomComplete = typeof options.onZoomComplete === "function" ? options.onZoomComplete : null;
+  introState.canStartZoom = typeof options.canStartZoom === "function" ? options.canStartZoom : null;
+  introState.onZoomBlocked = typeof options.onZoomBlocked === "function" ? options.onZoomBlocked : null;
   introState.crackSounds = [
     createAudio("./assets/Audio/EggCrack1.mp3", 0.9),
     createAudio("./assets/Audio/EggCrack2.mp3", 0.9),
@@ -629,6 +640,11 @@ export function initIntro(options = {}) {
 
 export function showEggPeek() {
   return setPeekState();
+}
+
+export function markIntroWorldReady() {
+  if (!introState.active || introState.phase !== "peek") return;
+  setIntroText("Press Enter again", false);
 }
 
 export function openEggFully() {

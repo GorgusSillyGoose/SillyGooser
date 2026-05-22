@@ -4,7 +4,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createDialogSystem } from "./js/dialog.js";
 import { createArcadeMenu } from "./js/arcadeMenu.js";
 import { createMemoryBook } from "./js/memoryBook.js";
-import { finishIntro, initEggIntro, handleIntroEnter, initIntroCamera, handleIntroControlInput, showIntroControlHints } from "./js/intro.js";
+import { finishIntro, initEggIntro, handleIntroEnter, initIntroCamera, handleIntroControlInput, markIntroWorldReady, showIntroControlHints } from "./js/intro.js";
 
 const leavesVS = /*glsl*/`
     uniform sampler2D uNoiseMap;
@@ -81,15 +81,19 @@ const scene = new THREE.Scene();
 const loader = new GLTFLoader();
 const camera = new THREE.PerspectiveCamera(35, window.innerWidth/window.innerHeight, 0.001, 1000);
 const renderer = new THREE.WebGLRenderer({alpha: true});
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const controls = new OrbitControls(camera, renderer.domElement);
 const dummy = new THREE.Object3D();
 const matrix = new THREE.Matrix4();
 const pointer = new THREE.Vector2(); 
 const raycaster = new THREE.Raycaster();
 const dlight01 = new THREE.DirectionalLight(0xcccccc, 1.8);
+const hemiLight = new THREE.HemisphereLight(0xf4ecd8, 0x6f6558, 0.55);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.12);
 const tree = {group: new THREE.Group()};
 const bench = {group: new THREE.Group(), ready: false};
-const DEBUG_SKIP_DIALOG = false;
+const DEBUG_SKIP_DIALOG = true;
 const DEBUG_SHOW_CAMERA = false;
 const GOOSE_START_TURN_OFFSET = -12 * Math.PI / 180;
 const GOOSE_HEIGHT_OFFSET = -0.14;
@@ -103,6 +107,15 @@ const dog = {
   ready: false,
   mixer: null,
   action: null,
+};
+const arcadeScreenFlicker = {
+  entries: [],
+  materials: [],
+  baseColors: [],
+  baseEmissive: [],
+  baseEmissiveIntensity: [],
+  baseOpacity: [],
+  light: null,
 };
 const gooseJumpSound = new Audio("./assets/Audio/Goose.mp3");
 gooseJumpSound.preload = "auto";
@@ -265,6 +278,12 @@ const fireflies = {
   group: new THREE.Group(),
   texture: null,
   particles: [],
+  points: null,
+  geometry: null,
+  material: null,
+  positions: null,
+  sizes: null,
+  opacities: null,
   reduceMotionQuery: typeof window.matchMedia === "function"
     ? window.matchMedia("(prefers-reduced-motion: reduce)")
     : null,
@@ -279,6 +298,21 @@ let groundGrassLayer = new THREE.Group();
 const groundShadowLayer = new THREE.Group();
 const projectedModelShadows = [];
 let elapsedSceneTime = 0;
+let pendingSceneAssets = 0;
+let sceneAssetsReady = false;
+
+function trackSceneAsset(promise) {
+  pendingSceneAssets += 1;
+  sceneAssetsReady = false;
+
+  return promise.finally(() => {
+    pendingSceneAssets = Math.max(0, pendingSceneAssets - 1);
+    if (pendingSceneAssets === 0) {
+      sceneAssetsReady = true;
+      markIntroWorldReady();
+    }
+  });
+}
 
 function createProjectedShadowMaterial(opacity) {
   return new THREE.MeshBasicMaterial({
@@ -293,6 +327,96 @@ function createProjectedShadowMaterial(opacity) {
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -2,
   });
+}
+
+function isArcadeScreenMesh(mesh) {
+  const label = `${mesh?.name || ""} ${mesh?.material?.name || ""}`.toLowerCase();
+  return label.includes("screen")
+    || label.includes("display")
+    || label.includes("monitor")
+    || label.includes("window")
+    || label.includes("glass")
+    || label.includes("crt");
+}
+
+function collectArcadeScreenCandidates(root) {
+  const candidates = [];
+  root?.traverse((child) => {
+    if (!child.isMesh || !child.geometry?.attributes?.position) return;
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.forEach((material, materialIndex) => {
+      const name = `${material?.name || ""}`.toLowerCase();
+      if (name === "black") {
+        candidates.push({ child, material, materialIndex });
+      }
+    });
+  });
+
+  if (candidates.length) {
+    return candidates;
+  }
+
+  const fallback = [];
+  root?.traverse((child) => {
+    if (!child.isMesh || !child.geometry?.attributes?.position) return;
+    const geom = child.geometry.clone();
+    geom.computeBoundingBox();
+    const size = new THREE.Vector3();
+    geom.boundingBox?.getSize(size);
+    const thickness = Math.min(size.x || 0, size.y || 0, size.z || 0);
+    const dims = [size.x || 0, size.y || 0, size.z || 0].sort((a, b) => b - a);
+    const faceArea = dims[0] * Math.max(dims[1], 0.001);
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    fallback.push({ child, material: materials[0], materialIndex: 0, thickness, faceArea });
+  });
+
+  return fallback
+    .filter((entry) => entry.thickness > 0)
+    .sort((a, b) => (a.thickness - b.thickness) || (b.faceArea - a.faceArea))
+    .slice(0, 1);
+}
+
+function setupArcadeScreenFlicker(root) {
+  arcadeScreenFlicker.entries = collectArcadeScreenCandidates(root);
+  arcadeScreenFlicker.materials = [];
+  arcadeScreenFlicker.baseColors = [];
+  arcadeScreenFlicker.baseEmissive = [];
+  arcadeScreenFlicker.baseEmissiveIntensity = [];
+  arcadeScreenFlicker.baseOpacity = [];
+
+  for (const entry of arcadeScreenFlicker.entries) {
+    const original = entry.material;
+    if (!original) continue;
+
+    const material = original.clone ? original.clone() : original;
+    material.transparent = true;
+    if (material.color) {
+      arcadeScreenFlicker.baseColors.push(new THREE.Color(0x000000));
+      material.color.set(0x000000);
+    } else {
+      arcadeScreenFlicker.baseColors.push(new THREE.Color(0x000000));
+    }
+    if (material.emissive) {
+      arcadeScreenFlicker.baseEmissive.push(new THREE.Color(0x000000));
+      arcadeScreenFlicker.baseEmissiveIntensity.push(0);
+      material.emissive.set(0x000000);
+      material.emissiveIntensity = 0;
+    } else {
+      arcadeScreenFlicker.baseEmissive.push(new THREE.Color(0x000000));
+      arcadeScreenFlicker.baseEmissiveIntensity.push(0);
+    }
+    arcadeScreenFlicker.baseOpacity.push(material.opacity ?? 1);
+    if (Array.isArray(entry.child.material)) {
+      entry.child.material[entry.materialIndex] = material;
+    } else {
+      entry.child.material = material;
+    }
+    arcadeScreenFlicker.materials.push(material);
+  }
+}
+
+function updateArcadeScreenFlicker(time) {
+  return time;
 }
 
 function collectShadowMeshes(sourceObject, sourceMeshes) {
@@ -379,7 +503,6 @@ function projectShadowGeometry(entry, shadowPart, expand = 1) {
   }
 
   targetPosition.needsUpdate = true;
-  geometry.computeBoundingSphere();
 }
 
 function updateProjectedModelShadow(entry) {
@@ -546,18 +669,51 @@ function ensureFireflyTexture() {
   fireflies.texture = createFireflyTexture();
 }
 
-function clampFireflyToRadius(x, z, maxRadius) {
-  const distanceSq = (x * x) + (z * z);
-  if (distanceSq <= (maxRadius * maxRadius)) {
-    return { x, z };
-  }
+function createFireflyMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      map: { value: fireflies.texture },
+      uPointScale: { value: 1 },
+    },
+    vertexShader: /* glsl */`
+      attribute vec3 aColor;
+      attribute float aSize;
+      attribute float aOpacity;
+      uniform float uPointScale;
+      varying vec3 vColor;
+      varying float vOpacity;
 
-  const distance = Math.sqrt(distanceSq) || 1;
-  const scale = maxRadius / distance;
-  return {
-    x: x * scale,
-    z: z * scale,
-  };
+      void main() {
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        gl_PointSize = aSize * uPointScale / max(0.0001, -mvPosition.z);
+        vColor = aColor;
+        vOpacity = aOpacity;
+      }
+    `,
+    fragmentShader: /* glsl */`
+      uniform sampler2D map;
+      varying vec3 vColor;
+      varying float vOpacity;
+
+      void main() {
+        vec4 texel = texture2D(map, gl_PointCoord);
+        gl_FragColor = vec4(texel.rgb * vColor, texel.a * vOpacity);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  });
+}
+
+function updateFireflyPointScale() {
+  if (!fireflies.material) return;
+  const { height } = getViewportSize();
+  const fov = THREE.MathUtils.degToRad(camera.fov || 35);
+  fireflies.material.uniforms.uPointScale.value = height / (2 * Math.tan(fov / 2));
 }
 
 function createFireflyParticle(rng) {
@@ -570,21 +726,7 @@ function createFireflyParticle(rng) {
   const anchorZ = Math.sin(angle) * radius;
   const warmPalette = [0xffe186, 0xffc86f, 0xffae66];
   const color = warmPalette[Math.floor(rng() * warmPalette.length)];
-  const material = new THREE.SpriteMaterial({
-    map: fireflies.texture,
-    color,
-    transparent: true,
-    opacity: 0.86,
-    depthWrite: false,
-    depthTest: true,
-    blending: THREE.AdditiveBlending,
-    toneMapped: false,
-  });
-  const sprite = new THREE.Sprite(material);
   const baseScale = reducedMotion ? randomInRange(0.16, 0.24) : randomInRange(0.18, 0.32);
-  sprite.scale.set(baseScale, baseScale, 1);
-  sprite.renderOrder = 8;
-  fireflies.group.add(sprite);
 
   return {
     anchorX,
@@ -603,24 +745,53 @@ function createFireflyParticle(rng) {
     baseOpacity: reducedMotion ? randomInRange(0.58, 0.8) : randomInRange(0.7, 1.0),
     baseScale,
     radiusLimit,
-    sprite,
-    material,
+    color: new THREE.Color(color),
   };
 }
 
 function rebuildFireflies() {
   ensureFireflyTexture();
 
-  for (const particle of fireflies.particles) {
-    particle.material.dispose();
-  }
-
   fireflies.group.clear();
+  fireflies.geometry?.dispose();
+  fireflies.material?.dispose();
+  fireflies.points = null;
+  fireflies.geometry = null;
+  fireflies.material = null;
   fireflies.particles = [];
 
   const rng = createSeededRandom(7113);
   const count = fireflies.reduceMotionQuery?.matches ? 14 : 24;
   fireflies.particles = Array.from({ length: count }, () => createFireflyParticle(rng));
+
+  fireflies.positions = new Float32Array(count * 3);
+  fireflies.sizes = new Float32Array(count);
+  fireflies.opacities = new Float32Array(count);
+  const colors = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const particle = fireflies.particles[i];
+    fireflies.positions[i * 3] = particle.anchorX;
+    fireflies.positions[i * 3 + 1] = particle.anchorY;
+    fireflies.positions[i * 3 + 2] = particle.anchorZ;
+    fireflies.sizes[i] = particle.baseScale;
+    fireflies.opacities[i] = particle.baseOpacity;
+    colors[i * 3] = particle.color.r;
+    colors[i * 3 + 1] = particle.color.g;
+    colors[i * 3 + 2] = particle.color.b;
+  }
+
+  fireflies.geometry = new THREE.BufferGeometry();
+  fireflies.geometry.setAttribute("position", new THREE.BufferAttribute(fireflies.positions, 3).setUsage(THREE.DynamicDrawUsage));
+  fireflies.geometry.setAttribute("aSize", new THREE.BufferAttribute(fireflies.sizes, 1).setUsage(THREE.DynamicDrawUsage));
+  fireflies.geometry.setAttribute("aOpacity", new THREE.BufferAttribute(fireflies.opacities, 1).setUsage(THREE.DynamicDrawUsage));
+  fireflies.geometry.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
+  fireflies.material = createFireflyMaterial();
+  fireflies.points = new THREE.Points(fireflies.geometry, fireflies.material);
+  fireflies.points.renderOrder = 8;
+  fireflies.points.frustumCulled = false;
+  fireflies.group.add(fireflies.points);
+  updateFireflyPointScale();
 }
 
 function createFireflySwarm() {
@@ -635,24 +806,44 @@ function createFireflySwarm() {
 }
 
 function updateFireflies(time) {
-  if (!fireflies.particles.length) return;
+  if (!fireflies.particles.length || !fireflies.geometry) return;
 
-  for (const particle of fireflies.particles) {
+  const positions = fireflies.positions;
+  const sizes = fireflies.sizes;
+  const opacities = fireflies.opacities;
+
+  for (let i = 0; i < fireflies.particles.length; i++) {
+    const particle = fireflies.particles[i];
     const x = particle.anchorX
       + Math.sin(time * particle.orbitSpeed + particle.orbitPhase) * particle.orbitRadiusX
       + Math.sin(time * (particle.orbitSpeed * 0.48) + particle.orbitPhaseSecondary) * particle.orbitRadiusX * 0.32;
     const z = particle.anchorZ
       + Math.cos(time * (particle.orbitSpeed * 0.88) + particle.orbitPhaseSecondary) * particle.orbitRadiusZ
       + Math.sin(time * (particle.orbitSpeed * 0.61) + particle.orbitPhase) * particle.orbitRadiusZ * 0.28;
-    const clamped = clampFireflyToRadius(x, z, particle.radiusLimit);
+    const distanceSq = (x * x) + (z * z);
+    const radiusSq = particle.radiusLimit * particle.radiusLimit;
+    let clampedX = x;
+    let clampedZ = z;
+    if (distanceSq > radiusSq) {
+      const clampScale = particle.radiusLimit / (Math.sqrt(distanceSq) || 1);
+      clampedX = x * clampScale;
+      clampedZ = z * clampScale;
+    }
     const pulse = Math.pow((Math.sin(time * particle.pulseSpeed + particle.pulsePhase) * 0.5) + 0.5, 1.35);
     const y = particle.anchorY + Math.sin(time * particle.bobSpeed + particle.bobPhase) * particle.bobAmplitude + (pulse * 0.05);
     const scale = particle.baseScale * (0.86 + pulse * 0.48);
+    const offset = i * 3;
 
-    particle.sprite.position.set(clamped.x, y, clamped.z);
-    particle.sprite.scale.set(scale, scale, 1);
-    particle.material.opacity = Math.min(1, particle.baseOpacity * (0.55 + pulse * 0.75));
+    positions[offset] = clampedX;
+    positions[offset + 1] = y;
+    positions[offset + 2] = clampedZ;
+    sizes[i] = scale;
+    opacities[i] = Math.min(1, particle.baseOpacity * (0.55 + pulse * 0.75));
   }
+
+  fireflies.geometry.attributes.position.needsUpdate = true;
+  fireflies.geometry.attributes.aSize.needsUpdate = true;
+  fireflies.geometry.attributes.aOpacity.needsUpdate = true;
 }
 
 function getViewportSize() {
@@ -668,6 +859,7 @@ function resizeScene() {
   camera.updateProjectionMatrix();
   renderer.setPixelRatio(RENDER_PIXEL_RATIO);
   renderer.setSize(width, height);
+  updateFireflyPointScale();
 }
 
 function createGrassSprite(texture, {
@@ -1011,8 +1203,8 @@ function buildGramophoneMusicDialog() {
       type: "choice",
       text: "What would you like to do?\nListen to music, hear a story, or play a game?",
       options: [
-        { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
-        { text: "Story", next: () => dogDialogRoutes.couchMemories },
+        { text: "Music", next: () => buildMusicDialogFromBench() },
+        { text: "Story", next: () => buildStoryDialogFromBench() },
         { text: "Game", next: () => dogDialogRoutes.arcadeGame },
       ],
     },
@@ -1022,6 +1214,11 @@ function buildGramophoneMusicDialog() {
 function buildStoryDialogFromBench() {
   seatGooseOnBench();
   return dogDialogRoutes.couchMemories;
+}
+
+function buildMusicDialogFromBench() {
+  seatGooseOnBench();
+  return dogDialogRoutes.gramophoneMusic;
 }
 
 const dogIntroDialogScript = [
@@ -1059,7 +1256,7 @@ const dogIntroDialogScript = [
           type: "choice",
           text: "What would you like to do?\nListen to music, hear a story, or play a game?",
           options: [
-            { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
+            { text: "Music", next: () => buildMusicDialogFromBench() },
             { text: "Story", next: () => buildStoryDialogFromBench() },
             { text: "Game", next: () => dogDialogRoutes.arcadeGame },
           ],
@@ -1097,7 +1294,7 @@ const dogRevisitDialogScript = [
           type: "choice",
           text: "What would you like to do?\nListen to music, hear a story, or play a game?",
           options: [
-            { text: "Music", next: () => dogDialogRoutes.gramophoneMusic },
+            { text: "Music", next: () => buildMusicDialogFromBench() },
             { text: "Story", next: () => buildStoryDialogFromBench() },
             { text: "Game", next: () => dogDialogRoutes.arcadeGame },
           ],
@@ -1132,7 +1329,7 @@ groundTexture.center.set(0.5, 0.5);
 groundTexture.rotation = -135* Math.PI / 180;
 groundTexture.wrapS = THREE.ClampToEdgeWrapping;
 groundTexture.wrapT = THREE.ClampToEdgeWrapping;
-const groundMaterial = new THREE.MeshBasicMaterial({
+const groundMaterial = new THREE.MeshLambertMaterial({
   map: groundTexture,
   transparent: true,
   depthWrite: false,
@@ -1143,6 +1340,7 @@ ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.07;
 ground.renderOrder = -10;
 ground.frustumCulled = false;
+ground.receiveShadow = true;
 // MATERIALS
 const leavesMat = new THREE.ShaderMaterial({
   lights: true,
@@ -1162,12 +1360,14 @@ const leavesMat = new THREE.ShaderMaterial({
   fragmentShader: leavesFS,
 })
 // GLTF LOADING 
-loader.loadAsync("./assets/models/tree.glb")
+trackSceneAsset(loader.loadAsync("./assets/models/tree.glb")
   .then(obj => {
 	document.getElementById("previewHack").style.display = "none";
   tree.pole = obj.scene.getObjectByName("Pole");
   tree.pole.material = new THREE.MeshToonMaterial({map: tree.pole.material.map});
   tree.pole.position.y -= 0.1;
+  tree.pole.castShadow = true;
+  tree.pole.receiveShadow = true;
   // Each vertex of crown mesh will be a leaf
   // Crown mesh won't be visible in scene
   tree.crown = obj.scene.getObjectByName("Leaves");
@@ -1182,6 +1382,8 @@ loader.loadAsync("./assets/models/tree.glb")
   tree.deadID = []; 
   tree.leafGeometry = obj.scene.getObjectByName("Leaf").geometry; 
   tree.leaves = new THREE.InstancedMesh(tree.leafGeometry, leavesMat, tree.leavesCount); 
+  tree.leaves.castShadow = true;
+  tree.leaves.receiveShadow = false;
   for (let i = 0; i < tree.leavesCount; i++) { 
     dummy.position.x = tree.crown.geometry.attributes.position.array[i*3];
     dummy.position.y = tree.crown.geometry.attributes.position.array[i*3+1];
@@ -1200,8 +1402,8 @@ loader.loadAsync("./assets/models/tree.glb")
   tree.collider = createXZCollider(tree.pole, 0.65, 0.45);
   createProjectedModelShadow({
     sourceObject: tree.pole,
-    opacity: 0.34,
-    blur: 4.2,
+    opacity: 0.28,
+    blur: 5.2,
     flatness: 0.34,
     length: 0.62,
     scaleX: 1.08,
@@ -1210,8 +1412,8 @@ loader.loadAsync("./assets/models/tree.glb")
   });
   createProjectedModelShadow({
     sourceObject: tree.crown,
-    opacity: 0.16,
-    blur: 5.6,
+    opacity: 0.12,
+    blur: 6.8,
     flatness: 0.2,
     length: 0.48,
     scaleX: 1.05,
@@ -1221,14 +1423,14 @@ loader.loadAsync("./assets/models/tree.glb")
   });
   for (let i = 0; i < 24; i++)
     queueDeadLeaf(Math.floor(Math.random() * tree.leavesCount)); 
-})
-loader.loadAsync("./assets/models/Goose.glb")
+}))
+trackSceneAsset(loader.loadAsync("./assets/models/Goose.glb")
   .then(obj => {
     goose.group = obj.scene;
     goose.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         const sourceMaterial = child.material || {};
         const isIris = (sourceMaterial.name || child.name || "").toLowerCase().includes("iris");
         child.material = new THREE.MeshToonMaterial({
@@ -1278,8 +1480,8 @@ loader.loadAsync("./assets/models/Goose.glb")
     scene.add(goose.group);
     goose.groundShadow = createProjectedModelShadow({
       sourceObject: goose.group,
-      opacity: 0.42,
-      blur: 3.2,
+      opacity: 0.34,
+      blur: 4.4,
       flatness: 0.3,
       length: 0.56,
       scaleX: 1.08,
@@ -1339,10 +1541,16 @@ loader.loadAsync("./assets/models/Goose.glb")
         startGooseIntroJump();
       }
     }
-  })
-loader.loadAsync("./assets/models/bench.glb")
+  }))
+trackSceneAsset(loader.loadAsync("./assets/models/bench.glb")
   .then(obj => {
     bench.group = obj.scene;
+    bench.group.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
     const benchBox = new THREE.Box3().setFromObject(bench.group);
     const benchSize = benchBox.getSize(new THREE.Vector3());
     const benchCenter = benchBox.getCenter(new THREE.Vector3());
@@ -1359,8 +1567,8 @@ loader.loadAsync("./assets/models/bench.glb")
     scene.add(bench.group);
     createProjectedModelShadow({
       sourceObject: bench.group,
-      opacity: 0.38,
-      blur: 4.8,
+      opacity: 0.31,
+      blur: 5.8,
       flatness: 0.3,
       length: 0.58,
       scaleX: 1.18,
@@ -1369,14 +1577,14 @@ loader.loadAsync("./assets/models/bench.glb")
     });
     bench.ready = true;
     attachDogToBench();
-  })
-loader.loadAsync("./assets/models/nest.glb")
+  }))
+  trackSceneAsset(loader.loadAsync("./assets/models/nest.glb")
   .then(obj => {
     nest.group = obj.scene;
     nest.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         const sourceMaterial = child.material || {};
         child.material = new THREE.MeshToonMaterial({
           map: sourceMaterial.map || null,
@@ -1411,14 +1619,14 @@ loader.loadAsync("./assets/models/nest.glb")
     });
     nest.ready = true;
     placeGooseAtNestStart();
-  })
-loader.loadAsync("./assets/models/Gramophone.glb")
+  }))
+  trackSceneAsset(loader.loadAsync("./assets/models/Gramophone.glb")
   .then(obj => {
     gramophone.group = obj.scene;
     gramophone.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         // Keep the original GLB material so the gramophone retains its texture/palette.
         if (Array.isArray(child.material)) {
           child.material = child.material.map((material) => material?.clone?.() || material);
@@ -1444,8 +1652,8 @@ loader.loadAsync("./assets/models/Gramophone.glb")
     scene.add(gramophone.group);
     createProjectedModelShadow({
       sourceObject: gramophone.group,
-      opacity: 0.4,
-      blur: 4.2,
+      opacity: 0.32,
+      blur: 5.0,
       flatness: 0.26,
       length: 0.66,
       scaleX: 1.08,
@@ -1465,14 +1673,14 @@ loader.loadAsync("./assets/models/Gramophone.glb")
       dialogScript: buildGramophoneMusicDialog,
       gifSrc: "./assets/ui/Dog_talk_102x102.gif",
     });
-  })
-loader.loadAsync("./assets/models/Arcade.glb")
+  }))
+  trackSceneAsset(loader.loadAsync("./assets/models/Arcade.glb")
   .then(obj => {
     arcade.group = obj.scene;
     arcade.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         const sourceMaterial = child.material || {};
         if (Array.isArray(child.material)) {
           child.material = child.material.map((material) => material?.clone?.() || material);
@@ -1502,10 +1710,11 @@ loader.loadAsync("./assets/models/Arcade.glb")
     arcade.group.rotation.y = 110 * Math.PI / 180;
     arcade.collider = createXZCollider(arcade.group, 0.85, 0.55);
     scene.add(arcade.group);
+    setupArcadeScreenFlicker(arcade.group);
     createProjectedModelShadow({
       sourceObject: arcade.group,
-      opacity: 0.42,
-      blur: 5,
+      opacity: 0.34,
+      blur: 6.0,
       flatness: 0.24,
       length: 0.7,
       scaleX: 1.12,
@@ -1529,14 +1738,14 @@ loader.loadAsync("./assets/models/Arcade.glb")
       gifSrc: "./assets/ui/Dog_talk_102x102.gif",
       onInteract: () => openArcadeMenu(),
     });
-  })
-loader.loadAsync("./assets/models/dog.glb")
+  }))
+  trackSceneAsset(loader.loadAsync("./assets/models/dog.glb")
   .then(obj => {
     dog.group = obj.scene;
     dog.group.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = false;
-        child.receiveShadow = false;
+        child.castShadow = true;
+        child.receiveShadow = true;
         const sourceMaterial = child.material || {};
         child.material = new THREE.MeshToonMaterial({
           map: sourceMaterial.map || null,
@@ -1568,8 +1777,8 @@ loader.loadAsync("./assets/models/dog.glb")
     dog.group.rotation.y = 220 * Math.PI / 180;
     dog.groundShadow = createProjectedModelShadow({
       sourceObject: dog.group,
-      opacity: 0.3,
-      blur: 3.2,
+      opacity: 0.24,
+      blur: 4.2,
       flatness: 0.33,
       length: 0.48,
       scaleX: 1.05,
@@ -1602,7 +1811,7 @@ loader.loadAsync("./assets/models/dog.glb")
       gifSrc: "./assets/ui/Dog_talk_102x102.gif",
       typeSpeed: 28,
     });
-  })
+  }))
 // INIT
 renderer.domElement.classList.add("scene-canvas");
 document.body.appendChild(renderer.domElement);
@@ -1610,16 +1819,27 @@ createFireflySwarm();
 renderer.domElement.style.imageRendering = "pixelated";
 renderer.domElement.style.imageRendering = "crisp-edges";
 resizeScene();
-dlight01.position.set(3,6,-3);
+dlight01.position.set(2.8,7.2,-2.8);
 dlight01.lookAt(0,2.4,0);
+dlight01.castShadow = true;
+dlight01.shadow.mapSize.set(2048, 2048);
+dlight01.shadow.radius = 6;
+dlight01.shadow.camera.near = 0.5;
+dlight01.shadow.camera.far = 30;
+dlight01.shadow.camera.left = -10;
+dlight01.shadow.camera.right = 10;
+dlight01.shadow.camera.top = 10;
+dlight01.shadow.camera.bottom = -10;
+dlight01.shadow.bias = -0.0005;
+dlight01.shadow.normalBias = 0.02;
 PROJECTED_SHADOW_LIGHT.copy(dlight01.position);
 rayPlane.visible = false;
 bushRing = createBushRing();
 groundGrassLayer = createGroundGrassLayer();
 camera.position.set(-7,1,-12);
 controls.target = new THREE.Vector3(0,2.4,0);
-controls.minPolarAngle = 0.65;
-controls.maxPolarAngle = 1.35; 
+controls.minPolarAngle = 0.25;
+controls.maxPolarAngle = 1.45; 
 controls.enableDamping = true;
 controls.enableZoom = true;
 controls.minDistance = 6;
@@ -1628,6 +1848,7 @@ controls.autoRotate = false;
 controls.enablePan = false;
 controls.touches = {TWO: THREE.TOUCH.ROTATE,};
 scene.add(dlight01, bushRing, tree.group, fireflies.group, rayPlane);
+scene.add(hemiLight, ambientLight);
 scene.add(ground, groundGrassLayer, groundShadowLayer);
 noiseMap.wrapS = THREE.RepeatWrapping;
 noiseMap.wrapT = THREE.RepeatWrapping;
@@ -1636,6 +1857,12 @@ initEggIntro({
   camera,
   controls,
   goose,
+  canStartZoom: () => sceneAssetsReady,
+  onZoomBlocked: () => {
+    if (pendingSceneAssets === 0) {
+      markIntroWorldReady();
+    }
+  },
   onShellOpened: () => {
     setGooseIntroPose();
   },
@@ -1657,7 +1884,7 @@ function animate () {
   elapsedSceneTime += delta;
   updateGoose(delta);
   updateBushVisibility(delta);
-  scene.updateMatrixWorld(true);
+  scene.updateMatrixWorld();
   for (const shadow of projectedModelShadows) {
     updateProjectedModelShadow(shadow);
   }
